@@ -1,0 +1,20 @@
+{
+ "ingredientPattern": "PBP,B_B,PBP",
+ "width": 3,
+ "height": 3,
+ "ingredients": {
+  "P": {
+   "type": "item",
+   "code": "game:plank-*"
+  },
+  "B": {
+   "type": "item",
+   "code": "game:ingot-brass"
+  }
+ },
+ "output": {
+  "type": "block",
+  "code": "curveostockage:baie-vide-north",
+  "quantity": 1
+ }
+}

@@ -1,0 +1,24 @@
+{
+ "ingredientPattern": "PPP,CRC",
+ "width": 3,
+ "height": 2,
+ "ingredients": {
+  "P": {
+   "type": "item",
+   "code": "game:plank-*"
+  },
+  "C": {
+   "type": "item",
+   "code": "game:ingot-copper"
+  },
+  "R": {
+   "type": "item",
+   "code": "game:gear-rusty"
+  }
+ },
+ "output": {
+  "type": "block",
+  "code": "curveostockage:atelier-north",
+  "quantity": 1
+ }
+}

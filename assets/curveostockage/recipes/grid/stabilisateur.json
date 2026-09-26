@@ -1,0 +1,28 @@
+{
+ "ingredientPattern": "CQC,CTC,CBC",
+ "width": 3,
+ "height": 3,
+ "ingredients": {
+  "C": {
+   "type": "item",
+   "code": "game:ingot-copper"
+  },
+  "Q": {
+   "type": "item",
+   "code": "game:clearquartz"
+  },
+  "T": {
+   "type": "item",
+   "code": "game:gear-temporal"
+  },
+  "B": {
+   "type": "item",
+   "code": "game:ingot-brass"
+  }
+ },
+ "output": {
+  "type": "block",
+  "code": "curveostockage:stabilisateur-north",
+  "quantity": 1
+ }
+}

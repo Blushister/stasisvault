@@ -1,0 +1,28 @@
+{
+ "ingredientPattern": "_Q_,BTB,_C_",
+ "width": 3,
+ "height": 3,
+ "ingredients": {
+  "Q": {
+   "type": "item",
+   "code": "game:clearquartz"
+  },
+  "B": {
+   "type": "item",
+   "code": "game:ingot-brass"
+  },
+  "T": {
+   "type": "item",
+   "code": "game:gear-temporal"
+  },
+  "C": {
+   "type": "block",
+   "code": "curveostockage:conduit-aucune"
+  }
+ },
+ "output": {
+  "type": "block",
+  "code": "curveostockage:emetteur-north",
+  "quantity": 1
+ }
+}

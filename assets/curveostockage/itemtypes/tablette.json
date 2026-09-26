@@ -1,0 +1,57 @@
+{
+ "code": "tablette",
+ "class": "curveostockage.ItemTablette",
+ "maxstacksize": 1,
+ "shape": {
+  "base": "item/tablette"
+ },
+ "creativeinventory": {
+  "general": [
+   "*"
+  ],
+  "stasisvault": [
+   "*"
+  ]
+ },
+ "guiTransform": {
+  "rotation": {
+   "x": 75,
+   "y": 0,
+   "z": 0
+  },
+  "origin": {
+   "x": 0.5,
+   "y": 0.1,
+   "z": 0.5
+  },
+  "scale": 1.7
+ },
+ "groundTransform": {
+  "origin": {
+   "x": 0.5,
+   "y": 0,
+   "z": 0.5
+  },
+  "scale": 2.2
+ },
+ "heldTpIdleAnimation": "holdbothhands",
+ "heldRightReadyAnimation": "holdbothhands",
+ "tpHandTransform": {
+  "translation": {
+   "x": -2.66,
+   "y": -0.24,
+   "z": -1.55
+  },
+  "rotation": {
+   "x": 53.2,
+   "y": -81.7,
+   "z": -49.1
+  },
+  "origin": {
+   "x": 1.4,
+   "y": 0,
+   "z": 0.5
+  },
+  "scale": 0.6
+ }
+}

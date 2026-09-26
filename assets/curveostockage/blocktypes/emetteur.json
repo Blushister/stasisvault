@@ -1,0 +1,65 @@
+{
+ "code": "emetteur",
+ "class": "curveostockage.BlockReseau",
+ "variantgroups": [
+  {
+   "code": "side",
+   "loadFromProperties": "abstract/horizontalorientation"
+  }
+ ],
+ "behaviors": [
+  {
+   "name": "HorizontalOrientable",
+   "properties": {
+    "dropBlockFace": "north"
+   }
+  }
+ ],
+ "creativeinventory": {
+  "general": [
+   "*-north"
+  ],
+  "stasisvault": [
+   "*-north"
+  ]
+ },
+ "shapeByType": {
+  "*-north": {
+   "base": "block/emetteur",
+   "rotateY": 180
+  },
+  "*-east": {
+   "base": "block/emetteur",
+   "rotateY": 90
+  },
+  "*-south": {
+   "base": "block/emetteur",
+   "rotateY": 0
+  },
+  "*-west": {
+   "base": "block/emetteur",
+   "rotateY": 270
+  }
+ },
+ "drawtype": "json",
+ "blockmaterial": "Metal",
+ "resistance": 3.5,
+ "lightAbsorption": 0,
+ "sidesolid": {
+  "all": false
+ },
+ "sideopaque": {
+  "all": false
+ },
+ "sounds": {
+  "place": "game:block/anvil",
+  "break": "game:block/anvil",
+  "hit": "game:block/anvil",
+  "walk": "game:walk/stone"
+ },
+ "lightHsv": [
+  23,
+  6,
+  10
+ ]
+}

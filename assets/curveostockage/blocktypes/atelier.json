@@ -1,0 +1,65 @@
+{
+ "code": "atelier",
+ "class": "curveostockage.BlockReseau",
+ "variantgroups": [
+  {
+   "code": "side",
+   "loadFromProperties": "abstract/horizontalorientation"
+  }
+ ],
+ "behaviors": [
+  {
+   "name": "HorizontalOrientable",
+   "properties": {
+    "dropBlockFace": "north"
+   }
+  }
+ ],
+ "creativeinventory": {
+  "general": [
+   "*-north"
+  ],
+  "stasisvault": [
+   "*-north"
+  ]
+ },
+ "shapeByType": {
+  "*-north": {
+   "base": "block/terminal-artisanat",
+   "rotateY": 180
+  },
+  "*-east": {
+   "base": "block/terminal-artisanat",
+   "rotateY": 90
+  },
+  "*-south": {
+   "base": "block/terminal-artisanat",
+   "rotateY": 0
+  },
+  "*-west": {
+   "base": "block/terminal-artisanat",
+   "rotateY": 270
+  }
+ },
+ "drawtype": "json",
+ "blockmaterial": "Metal",
+ "resistance": 3.5,
+ "lightAbsorption": 0,
+ "sidesolid": {
+  "all": false
+ },
+ "sideopaque": {
+  "all": false
+ },
+ "sounds": {
+  "place": "game:block/planks",
+  "break": "game:block/planks",
+  "hit": "game:block/planks",
+  "walk": "game:walk/wood"
+ },
+ "lightHsv": [
+  23,
+  4,
+  6
+ ]
+}

@@ -1,0 +1,126 @@
+{
+ "code": "cylindre",
+ "class": "curveostockage.ItemCylindre",
+ "maxstacksize": 1,
+ "attributesByType": {
+  "*-cuivre": {
+   "capacite": {
+    "objets": 2000,
+    "types": 25
+   }
+  },
+  "*-bronze": {
+   "capacite": {
+    "objets": 8000,
+    "types": 50
+   }
+  },
+  "*-acier": {
+   "capacite": {
+    "objets": 32000,
+    "types": 100
+   }
+  },
+  "*-refrigere": {
+   "capacite": {
+    "objets": 4000,
+    "types": 30
+   }
+  },
+  "*-stase": {
+   "capacite": {
+    "objets": 2000,
+    "types": 25
+   }
+  }
+ },
+ "variantgroups": [
+  {
+   "code": "materiau",
+   "states": [
+    "cuivre",
+    "bronze",
+    "acier",
+    "refrigere",
+    "stase"
+   ]
+  }
+ ],
+ "shapeByType": {
+  "*-cuivre": {
+   "base": "item/cylindre-cuivre"
+  },
+  "*-bronze": {
+   "base": "item/cylindre-bronze"
+  },
+  "*-acier": {
+   "base": "item/cylindre-acier"
+  },
+  "*-refrigere": {
+   "base": "item/cylindre-refrigere"
+  },
+  "*-stase": {
+   "base": "item/cylindre-stase"
+  }
+ },
+ "creativeinventory": {
+  "general": [
+   "*"
+  ],
+  "stasisvault": [
+   "*"
+  ]
+ },
+ "guiTransform": {
+  "rotation": {
+   "x": -22,
+   "y": -45,
+   "z": 0
+  },
+  "origin": {
+   "x": 0.5,
+   "y": 0.5,
+   "z": 0.5
+  },
+  "scale": 1.9
+ },
+ "groundTransform": {
+  "translation": {
+   "x": 0,
+   "y": -0.25,
+   "z": 0
+  },
+  "origin": {
+   "x": 0.5,
+   "y": 0.5,
+   "z": 0.5
+  },
+  "scale": 2.5
+ },
+ "tpHandTransform": {
+  "translation": {
+   "x": -0.9,
+   "y": -0.2,
+   "z": -0.6
+  },
+  "rotation": {
+   "x": 0,
+   "y": 0,
+   "z": -90
+  },
+  "scale": 0.6
+ },
+ "fpHandTransform": {
+  "translation": {
+   "x": 0,
+   "y": 0.1,
+   "z": 0
+  },
+  "rotation": {
+   "x": 20,
+   "y": 40,
+   "z": 0
+  },
+  "scale": 1.8
+ }
+}

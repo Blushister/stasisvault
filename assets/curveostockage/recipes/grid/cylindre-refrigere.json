@@ -1,0 +1,34 @@
+{
+ "ingredientPattern": "GCG,CQC,_R_",
+ "width": 3,
+ "height": 3,
+ "ingredients": {
+  "G": {
+   "type": "block",
+   "code": "game:lakeice"
+  },
+  "C": {
+   "type": "item",
+   "code": "game:ingot-*",
+   "name": "metal",
+   "allowedVariants": [
+    "tinbronze",
+    "bismuthbronze",
+    "blackbronze"
+   ]
+  },
+  "Q": {
+   "type": "item",
+   "code": "game:clearquartz"
+  },
+  "R": {
+   "type": "item",
+   "code": "game:gear-rusty"
+  }
+ },
+ "output": {
+  "type": "item",
+  "code": "curveostockage:cylindre-refrigere",
+  "quantity": 1
+ }
+}

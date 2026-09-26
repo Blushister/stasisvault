@@ -1,0 +1,28 @@
+{
+ "ingredientPattern": "_Q_,BRB,_P_",
+ "width": 3,
+ "height": 3,
+ "ingredients": {
+  "Q": {
+   "type": "item",
+   "code": "game:clearquartz"
+  },
+  "B": {
+   "type": "item",
+   "code": "game:ingot-brass"
+  },
+  "R": {
+   "type": "item",
+   "code": "game:gear-rusty"
+  },
+  "P": {
+   "type": "item",
+   "code": "game:plank-*"
+  }
+ },
+ "output": {
+  "type": "block",
+  "code": "curveostockage:terminal-north",
+  "quantity": 1
+ }
+}

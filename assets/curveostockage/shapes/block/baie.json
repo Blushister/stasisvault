@@ -1,0 +1,225 @@
+{
+ "editor": {
+  "allAngles": false
+ },
+ "textureWidth": 16,
+ "textureHeight": 16,
+ "textures": {
+  "laiton": "curveostockage:block/laiton",
+  "lisse": "curveostockage:block/laiton-lisse",
+  "fer": "curveostockage:block/fer",
+  "cuivre": "curveostockage:block/cuivre",
+  "noyer": "curveostockage:block/noyer",
+  "verre": "curveostockage:block/verre-temporel",
+  "facade": "curveostockage:block/baie-facade"
+ },
+ "elements": [
+  {
+   "name": "corps",
+   "from": [
+    0,
+    0,
+    1
+   ],
+   "to": [
+    16,
+    16,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#lisse",
+     "uv": [
+      1,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#lisse",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#lisse",
+     "uv": [
+      1,
+      0,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#fer",
+     "uv": [
+      0,
+      1,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#fer",
+     "uv": [
+      0,
+      1,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "name": "cadre-haut",
+   "from": [
+    0,
+    15,
+    0
+   ],
+   "to": [
+    16,
+    16,
+    1
+   ],
+   "faces": {
+    "north": {
+     "texture": "#laiton",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    },
+    "east": {
+     "texture": "#laiton",
+     "uv": [
+      0,
+      0,
+      1,
+      1
+     ]
+    },
+    "south": {
+     "texture": "#laiton",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    },
+    "west": {
+     "texture": "#laiton",
+     "uv": [
+      0,
+      0,
+      1,
+      1
+     ]
+    },
+    "up": {
+     "texture": "#laiton",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    },
+    "down": {
+     "texture": "#laiton",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    }
+   }
+  },
+  {
+   "name": "cadre-bas",
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    1,
+    1
+   ],
+   "faces": {
+    "north": {
+     "texture": "#laiton",
+     "uv": [
+      0,
+      15,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#laiton",
+     "uv": [
+      0,
+      15,
+      1,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#laiton",
+     "uv": [
+      0,
+      15,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#laiton",
+     "uv": [
+      0,
+      15,
+      1,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#laiton",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    },
+    "down": {
+     "texture": "#laiton",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    }
+   }
+  }
+ ]
+}

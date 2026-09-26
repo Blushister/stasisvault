@@ -1,0 +1,32 @@
+{
+ "ingredientPattern": "BQB,RTR,BPB",
+ "width": 3,
+ "height": 3,
+ "ingredients": {
+  "B": {
+   "type": "item",
+   "code": "game:ingot-brass"
+  },
+  "Q": {
+   "type": "item",
+   "code": "game:clearquartz"
+  },
+  "R": {
+   "type": "item",
+   "code": "game:gear-rusty"
+  },
+  "T": {
+   "type": "item",
+   "code": "game:gear-temporal"
+  },
+  "P": {
+   "type": "item",
+   "code": "game:metalplate-iron"
+  }
+ },
+ "output": {
+  "type": "block",
+  "code": "curveostockage:coeur-north",
+  "quantity": 1
+ }
+}

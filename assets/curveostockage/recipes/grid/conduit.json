@@ -1,0 +1,20 @@
+{
+ "ingredientPattern": "CBC",
+ "width": 3,
+ "height": 1,
+ "ingredients": {
+  "C": {
+   "type": "item",
+   "code": "game:ingot-copper"
+  },
+  "B": {
+   "type": "item",
+   "code": "game:ingot-brass"
+  }
+ },
+ "output": {
+  "type": "block",
+  "code": "curveostockage:conduit-aucune",
+  "quantity": 8
+ }
+}

@@ -1,0 +1,161 @@
+{
+ "editor": {
+  "allAngles": false
+ },
+ "textureWidth": 16,
+ "textureHeight": 16,
+ "textures": {
+  "laiton": "curveostockage:block/laiton",
+  "lisse": "curveostockage:block/laiton-lisse",
+  "fer": "curveostockage:block/fer",
+  "cuivre": "curveostockage:block/cuivre",
+  "noyer": "curveostockage:block/noyer",
+  "verre": "curveostockage:block/verre-temporel"
+ },
+ "elements": [
+  {
+   "name": "noeud",
+   "from": [
+    5,
+    5,
+    5
+   ],
+   "to": [
+    11,
+    11,
+    11
+   ],
+   "faces": {
+    "north": {
+     "texture": "#laiton",
+     "uv": [
+      5,
+      5,
+      11,
+      11
+     ]
+    },
+    "east": {
+     "texture": "#laiton",
+     "uv": [
+      5,
+      5,
+      11,
+      11
+     ]
+    },
+    "south": {
+     "texture": "#laiton",
+     "uv": [
+      5,
+      5,
+      11,
+      11
+     ]
+    },
+    "west": {
+     "texture": "#laiton",
+     "uv": [
+      5,
+      5,
+      11,
+      11
+     ]
+    },
+    "up": {
+     "texture": "#laiton",
+     "uv": [
+      5,
+      5,
+      11,
+      11
+     ]
+    },
+    "down": {
+     "texture": "#laiton",
+     "uv": [
+      5,
+      5,
+      11,
+      11
+     ]
+    }
+   }
+  },
+  {
+   "name": "coeur-verre",
+   "from": [
+    6.5,
+    6.5,
+    4.9
+   ],
+   "to": [
+    9.5,
+    9.5,
+    11.1
+   ],
+   "faces": {
+    "north": {
+     "texture": "#verre",
+     "uv": [
+      6.5,
+      6.5,
+      9.5,
+      9.5
+     ],
+     "glow": 120
+    },
+    "east": {
+     "texture": "#verre",
+     "uv": [
+      4.9,
+      6.5,
+      11.1,
+      9.5
+     ],
+     "glow": 120
+    },
+    "south": {
+     "texture": "#verre",
+     "uv": [
+      6.5,
+      6.5,
+      9.5,
+      9.5
+     ],
+     "glow": 120
+    },
+    "west": {
+     "texture": "#verre",
+     "uv": [
+      4.9,
+      6.5,
+      11.1,
+      9.5
+     ],
+     "glow": 120
+    },
+    "up": {
+     "texture": "#verre",
+     "uv": [
+      6.5,
+      4.9,
+      9.5,
+      11.1
+     ],
+     "glow": 120
+    },
+    "down": {
+     "texture": "#verre",
+     "uv": [
+      6.5,
+      4.9,
+      9.5,
+      11.1
+     ],
+     "glow": 120
+    }
+   }
+  }
+ ]
+}

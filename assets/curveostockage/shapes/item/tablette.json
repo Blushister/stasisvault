@@ -1,0 +1,301 @@
+{
+ "editor": {
+  "allAngles": false
+ },
+ "textureWidth": 16,
+ "textureHeight": 16,
+ "textures": {
+  "laiton": "curveostockage:block/laiton",
+  "lisse": "curveostockage:block/laiton-lisse",
+  "fer": "curveostockage:block/fer",
+  "cuivre": "curveostockage:block/cuivre",
+  "noyer": "curveostockage:block/noyer",
+  "verre": "curveostockage:block/verre-temporel",
+  "ecran": "curveostockage:block/terminal-ecran"
+ },
+ "elements": [
+  {
+   "name": "cadre",
+   "from": [
+    3,
+    0,
+    1
+   ],
+   "to": [
+    13,
+    1.5,
+    15
+   ],
+   "faces": {
+    "north": {
+     "texture": "#noyer",
+     "uv": [
+      3,
+      14.5,
+      13,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#noyer",
+     "uv": [
+      1,
+      14.5,
+      15,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#noyer",
+     "uv": [
+      3,
+      14.5,
+      13,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#noyer",
+     "uv": [
+      1,
+      14.5,
+      15,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#noyer",
+     "uv": [
+      3,
+      1,
+      13,
+      15
+     ]
+    },
+    "down": {
+     "texture": "#noyer",
+     "uv": [
+      3,
+      1,
+      13,
+      15
+     ]
+    }
+   }
+  },
+  {
+   "name": "ecran",
+   "from": [
+    4,
+    1.5,
+    2
+   ],
+   "to": [
+    12,
+    1.8,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#laiton",
+     "uv": [
+      4,
+      14.2,
+      12,
+      14.5
+     ]
+    },
+    "east": {
+     "texture": "#laiton",
+     "uv": [
+      2,
+      14.2,
+      14,
+      14.5
+     ]
+    },
+    "south": {
+     "texture": "#laiton",
+     "uv": [
+      4,
+      14.2,
+      12,
+      14.5
+     ]
+    },
+    "west": {
+     "texture": "#laiton",
+     "uv": [
+      2,
+      14.2,
+      14,
+      14.5
+     ]
+    },
+    "up": {
+     "texture": "#ecran",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "glow": 150
+    },
+    "down": {
+     "texture": "#laiton",
+     "uv": [
+      4,
+      2,
+      12,
+      14
+     ]
+    }
+   }
+  },
+  {
+   "name": "charniere",
+   "from": [
+    6,
+    0.3,
+    0.4
+   ],
+   "to": [
+    10,
+    1.2,
+    1
+   ],
+   "faces": {
+    "north": {
+     "texture": "#laiton",
+     "uv": [
+      6,
+      14.8,
+      10,
+      15.7
+     ]
+    },
+    "east": {
+     "texture": "#laiton",
+     "uv": [
+      0.4,
+      14.8,
+      1,
+      15.7
+     ]
+    },
+    "south": {
+     "texture": "#laiton",
+     "uv": [
+      6,
+      14.8,
+      10,
+      15.7
+     ]
+    },
+    "west": {
+     "texture": "#laiton",
+     "uv": [
+      0.4,
+      14.8,
+      1,
+      15.7
+     ]
+    },
+    "up": {
+     "texture": "#laiton",
+     "uv": [
+      6,
+      0.4,
+      10,
+      1
+     ]
+    },
+    "down": {
+     "texture": "#laiton",
+     "uv": [
+      6,
+      0.4,
+      10,
+      1
+     ]
+    }
+   }
+  },
+  {
+   "name": "lentille",
+   "from": [
+    7.3,
+    1.5,
+    14.3
+   ],
+   "to": [
+    8.7,
+    2.2,
+    14.9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#verre",
+     "uv": [
+      7.3,
+      13.8,
+      8.7,
+      14.5
+     ],
+     "glow": 200
+    },
+    "east": {
+     "texture": "#verre",
+     "uv": [
+      14.3,
+      13.8,
+      14.9,
+      14.5
+     ],
+     "glow": 200
+    },
+    "south": {
+     "texture": "#verre",
+     "uv": [
+      7.3,
+      13.8,
+      8.7,
+      14.5
+     ],
+     "glow": 200
+    },
+    "west": {
+     "texture": "#verre",
+     "uv": [
+      14.3,
+      13.8,
+      14.9,
+      14.5
+     ],
+     "glow": 200
+    },
+    "up": {
+     "texture": "#verre",
+     "uv": [
+      7.3,
+      14.3,
+      8.7,
+      14.9
+     ],
+     "glow": 200
+    },
+    "down": {
+     "texture": "#verre",
+     "uv": [
+      7.3,
+      14.3,
+      8.7,
+      14.9
+     ],
+     "glow": 200
+    }
+   }
+  }
+ ]
+}

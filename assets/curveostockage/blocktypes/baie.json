@@ -1,0 +1,84 @@
+{
+ "code": "baie",
+ "class": "curveostockage.BlockReseau",
+ "variantgroups": [
+  {
+   "code": "etat",
+   "states": [
+    "vide",
+    "pleine"
+   ]
+  },
+  {
+   "code": "side",
+   "loadFromProperties": "abstract/horizontalorientation"
+  }
+ ],
+ "behaviors": [
+  {
+   "name": "HorizontalOrientable",
+   "properties": {
+    "dropBlockFace": "north"
+   }
+  }
+ ],
+ "creativeinventory": {
+  "general": [
+   "*-vide-north"
+  ],
+  "stasisvault": [
+   "*-vide-north"
+  ]
+ },
+ "shapeByType": {
+  "*-vide-north": {
+   "base": "block/baie",
+   "rotateY": 180
+  },
+  "*-vide-east": {
+   "base": "block/baie",
+   "rotateY": 90
+  },
+  "*-vide-south": {
+   "base": "block/baie",
+   "rotateY": 0
+  },
+  "*-vide-west": {
+   "base": "block/baie",
+   "rotateY": 270
+  },
+  "*-pleine-north": {
+   "base": "block/baie-pleine",
+   "rotateY": 180
+  },
+  "*-pleine-east": {
+   "base": "block/baie-pleine",
+   "rotateY": 90
+  },
+  "*-pleine-south": {
+   "base": "block/baie-pleine",
+   "rotateY": 0
+  },
+  "*-pleine-west": {
+   "base": "block/baie-pleine",
+   "rotateY": 270
+  }
+ },
+ "drawtype": "json",
+ "blockmaterial": "Metal",
+ "resistance": 3.5,
+ "lightAbsorption": 0,
+ "sidesolid": {
+  "all": false
+ },
+ "sideopaque": {
+  "all": false
+ },
+ "sounds": {
+  "place": "game:block/anvil",
+  "break": "game:block/anvil",
+  "hit": "game:block/anvil",
+  "walk": "game:walk/stone"
+ },
+ "entityClass": "curveostockage.Baie"
+}

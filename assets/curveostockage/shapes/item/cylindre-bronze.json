@@ -1,0 +1,157 @@
+{
+ "editor": {
+  "allAngles": false
+ },
+ "textureWidth": 16,
+ "textureHeight": 16,
+ "textures": {
+  "flanc": "curveostockage:item/cylindre-bronze-flanc",
+  "couvercle": "curveostockage:item/cylindre-bronze-couvercle"
+ },
+ "elements": [
+  {
+   "name": "a",
+   "from": [
+    5,
+    5,
+    2
+   ],
+   "to": [
+    11,
+    11,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#couvercle",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#flanc",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#couvercle",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#flanc",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#flanc",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#flanc",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "name": "b",
+   "from": [
+    5,
+    5,
+    2.01
+   ],
+   "to": [
+    11,
+    11,
+    13.99
+   ],
+   "faces": {
+    "north": {
+     "texture": "#couvercle",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#flanc",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#couvercle",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#flanc",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#flanc",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#flanc",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   },
+   "rotationOrigin": [
+    8,
+    8,
+    8
+   ],
+   "rotationZ": 45
+  }
+ ]
+}

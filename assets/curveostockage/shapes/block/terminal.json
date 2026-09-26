@@ -1,0 +1,232 @@
+{
+ "editor": {
+  "allAngles": false
+ },
+ "textureWidth": 16,
+ "textureHeight": 16,
+ "textures": {
+  "laiton": "curveostockage:block/laiton",
+  "lisse": "curveostockage:block/laiton-lisse",
+  "fer": "curveostockage:block/fer",
+  "cuivre": "curveostockage:block/cuivre",
+  "noyer": "curveostockage:block/noyer",
+  "verre": "curveostockage:block/verre-temporel",
+  "ecran": "curveostockage:block/terminal-ecran"
+ },
+ "elements": [
+  {
+   "name": "socle",
+   "from": [
+    3,
+    0,
+    3
+   ],
+   "to": [
+    13,
+    2,
+    13
+   ],
+   "faces": {
+    "north": {
+     "texture": "#noyer",
+     "uv": [
+      3,
+      14,
+      13,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#noyer",
+     "uv": [
+      3,
+      14,
+      13,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#noyer",
+     "uv": [
+      3,
+      14,
+      13,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#noyer",
+     "uv": [
+      3,
+      14,
+      13,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#noyer",
+     "uv": [
+      3,
+      3,
+      13,
+      13
+     ]
+    },
+    "down": {
+     "texture": "#noyer",
+     "uv": [
+      3,
+      3,
+      13,
+      13
+     ]
+    }
+   }
+  },
+  {
+   "name": "pied",
+   "from": [
+    6,
+    2,
+    6
+   ],
+   "to": [
+    10,
+    9,
+    10
+   ],
+   "faces": {
+    "north": {
+     "texture": "#noyer",
+     "uv": [
+      6,
+      7,
+      10,
+      14
+     ]
+    },
+    "east": {
+     "texture": "#noyer",
+     "uv": [
+      6,
+      7,
+      10,
+      14
+     ]
+    },
+    "south": {
+     "texture": "#noyer",
+     "uv": [
+      6,
+      7,
+      10,
+      14
+     ]
+    },
+    "west": {
+     "texture": "#noyer",
+     "uv": [
+      6,
+      7,
+      10,
+      14
+     ]
+    },
+    "up": {
+     "texture": "#noyer",
+     "uv": [
+      6,
+      6,
+      10,
+      10
+     ]
+    },
+    "down": {
+     "texture": "#noyer",
+     "uv": [
+      6,
+      6,
+      10,
+      10
+     ]
+    }
+   }
+  },
+  {
+   "name": "pupitre",
+   "from": [
+    1,
+    9,
+    2
+   ],
+   "to": [
+    15,
+    11,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#laiton",
+     "uv": [
+      1,
+      5,
+      15,
+      7
+     ]
+    },
+    "east": {
+     "texture": "#laiton",
+     "uv": [
+      2,
+      5,
+      14,
+      7
+     ]
+    },
+    "south": {
+     "texture": "#laiton",
+     "uv": [
+      1,
+      5,
+      15,
+      7
+     ]
+    },
+    "west": {
+     "texture": "#laiton",
+     "uv": [
+      2,
+      5,
+      14,
+      7
+     ]
+    },
+    "up": {
+     "texture": "#ecran",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "glow": 140
+    },
+    "down": {
+     "texture": "#laiton",
+     "uv": [
+      1,
+      2,
+      15,
+      14
+     ]
+    }
+   },
+   "rotationOrigin": [
+    8,
+    10,
+    8
+   ],
+   "rotationX": -22.5
+  }
+ ]
+}

@@ -1,0 +1,66 @@
+{
+ "code": "ancre",
+ "class": "curveostockage.BlockReseau",
+ "variantgroups": [
+  {
+   "code": "side",
+   "loadFromProperties": "abstract/horizontalorientation"
+  }
+ ],
+ "behaviors": [
+  {
+   "name": "HorizontalOrientable",
+   "properties": {
+    "dropBlockFace": "north"
+   }
+  }
+ ],
+ "creativeinventory": {
+  "general": [
+   "*-north"
+  ],
+  "stasisvault": [
+   "*-north"
+  ]
+ },
+ "shapeByType": {
+  "*-north": {
+   "base": "block/ancre",
+   "rotateY": 180
+  },
+  "*-east": {
+   "base": "block/ancre",
+   "rotateY": 90
+  },
+  "*-south": {
+   "base": "block/ancre",
+   "rotateY": 0
+  },
+  "*-west": {
+   "base": "block/ancre",
+   "rotateY": 270
+  }
+ },
+ "drawtype": "json",
+ "blockmaterial": "Metal",
+ "resistance": 3.5,
+ "lightAbsorption": 0,
+ "sidesolid": {
+  "all": false
+ },
+ "sideopaque": {
+  "all": false
+ },
+ "sounds": {
+  "place": "game:block/anvil",
+  "break": "game:block/anvil",
+  "hit": "game:block/anvil",
+  "walk": "game:walk/stone"
+ },
+ "lightHsv": [
+  23,
+  5,
+  9
+ ],
+ "entityClass": "curveostockage.Ancre"
+}
