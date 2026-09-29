@@ -78,10 +78,11 @@ json.dump({
 json.dump({
     'code': 'cylindre', 'class': 'curveostockage.ItemCylindre', 'maxstacksize': 1,
     'attributesByType': {'*-cuivre': {'capacite': {'objets': 2000, 'types': 25}}, '*-bronze': {'capacite': {'objets': 8000, 'types': 50}},
+        '*-fer': {'capacite': {'objets': 16000, 'types': 75}},
         '*-acier': {'capacite': {'objets': 32000, 'types': 100}}, '*-refrigere': {'capacite': {'objets': 4000, 'types': 30}},
         '*-stase': {'capacite': {'objets': 2000, 'types': 25}}},
-    'variantgroups': [{'code': 'materiau', 'states': ['cuivre', 'bronze', 'acier', 'refrigere', 'stase']}],
-    'shapeByType': {f'*-{m}': {'base': f'item/cylindre-{m}'} for m in ('cuivre', 'bronze', 'acier', 'refrigere', 'stase')},
+    'variantgroups': [{'code': 'materiau', 'states': ['cuivre', 'bronze', 'fer', 'acier', 'refrigere', 'stase']}],
+    'shapeByType': {f'*-{m}': {'base': f'item/cylindre-{m}'} for m in ('cuivre', 'bronze', 'fer', 'acier', 'refrigere', 'stase')},
     'creativeinventory': {'general': ['*'], 'stasisvault': ['*']},
     'guiTransform': {'rotation': {'x': -22, 'y': -45, 'z': 0}, 'origin': {'x': 0.5, 'y': 0.5, 'z': 0.5}, 'scale': 1.9},
     'groundTransform': {'translation': {'x': 0, 'y': -0.25, 'z': 0}, 'origin': {'x': 0.5, 'y': 0.5, 'z': 0.5}, 'scale': 2.5},
@@ -100,11 +101,58 @@ json.dump({
     'tpHandTransform': {'translation': {'x': -2.66, 'y': -0.24, 'z': -1.55}, 'rotation': {'x': 53.2, 'y': -81.7, 'z': -49.1},
                         'origin': {'x': 1.4, 'y': 0, 'z': 0.5}, 'scale': 0.6},
 }, open(f'{A}itemtypes/tablette.json', 'w'), indent=1)
+# Bus (v1.9) : 6 orientations (la tête vise le bloc voisin), boîtes de sélection qui suivent le modèle
+import sys, contextlib, io
+sys.path.insert(0, 'outils')
+with contextlib.redirect_stdout(io.StringIO()):
+    from formes import boites_bus, TOURNER
+for code, entite in (('busimport', 'BusImport'), ('busexport', 'BusExport'), ('busstockage', 'BusStockage')):
+    json.dump({
+        'code': code, 'class': 'curveostockage.BlockBus', 'entityClass': f'curveostockage.{entite}',
+        'variantgroups': [{'code': 'face', 'states': list(TOURNER)}],
+        'creativeinventory': {'general': ['*-north'], 'stasisvault': ['*-north']},
+        'shapeByType': {f'*-{d}': {'base': f'block/{code}-{d}'} for d in TOURNER},
+        'drawtype': 'json', 'blockmaterial': 'Metal', 'resistance': 3.5, 'lightAbsorption': 0, 'lightHsv': [23, 4, 5],
+        'sidesolid': {'all': False}, 'sideopaque': {'all': False}, 'sounds': SONS_METAL,
+        'collisionSelectionBoxesByType': {f'*-{d}': boites_bus(d) for d in TOURNER},
+        'guiTransform': {'rotation': {'x': -22.6, 'y': -135, 'z': 0}, 'origin': {'x': 0.5, 'y': 0.5, 'z': 0.5}, 'scale': 1.3},
+    }, open(f'{A}blocktypes/{code}.json', 'w'), indent=1)
+
+# Automate horloger (v1.9) : consommateur mécanique (axe au-dessus ou en dessous), façade vers le joueur.
+# Toutes les textures sont déclarées ici : les pièces mobiles, dessinées à part, les retrouvent sur le bloc.
+TEX_AUTOMATE = {'laiton': 'block/laiton', 'lisse': 'block/laiton-lisse', 'fer': 'block/fer', 'cuivre': 'block/cuivre',
+                'noyer': 'block/noyer', 'verre': 'block/verre-temporel', 'flancpic': 'item/cylindre-bronze-flanc', 'carte': 'item/carte-perforee'}
+json.dump({
+    'code': 'automate', 'class': 'curveostockage.BlockAutomate', 'entityClass': 'curveostockage.Automate',
+    'entityBehaviors': [{'name': 'MPConsumer', 'properties': {'mechPartShape': None, 'resistance': 0.05}}],
+    'variantgroups': [{'code': 'orientation', 'states': ['north', 'east', 'south', 'west']}],
+    'creativeinventory': {'general': ['*-north'], 'mechanics': ['*-north'], 'stasisvault': ['*-north']},
+    'shapeByType': {f'*-{o}': {'base': 'block/automate', 'rotateY': r} for o, r in ROT.items()},
+    'textures': {k: {'base': v} for k, v in TEX_AUTOMATE.items()},
+    'drawtype': 'json', 'blockmaterial': 'Wood', 'resistance': 3, 'lightAbsorption': 0,
+    'sidesolid': {'all': False, 'down': True}, 'sideopaque': {'all': False}, 'sounds': SONS_BOIS,
+}, open(f'{A}blocktypes/automate.json', 'w'), indent=1)
+# Bus : textures déclarées aussi (les bras de conduit dessinés au rendu les utilisent)
+for code in ('busimport', 'busexport', 'busstockage'):
+    j = json.load(open(f'{A}blocktypes/{code}.json'))
+    j['textures'] = {k: {'base': v} for k, v in {**TEX_AUTOMATE, 'facade': f'block/{code}-facade'}.items() if k not in ('flancpic', 'carte')}
+    json.dump(j, open(f'{A}blocktypes/{code}.json', 'w'), indent=1)
+json.dump({
+    'code': 'carte', 'class': 'curveostockage.ItemCarte',
+    'variantgroups': [{'code': 'etat', 'states': ['vierge', 'perforee']}],
+    'maxstacksizeByType': {'*-vierge': 64, '*': 1},
+    'shapeByType': {f'*-{e}': {'base': f'item/carte-{e}'} for e in ('vierge', 'perforee')},
+    'creativeinventory': {'general': ['*-vierge'], 'stasisvault': ['*-vierge']},
+    'guiTransform': {'rotation': {'x': 75, 'y': 0, 'z': 0}, 'origin': {'x': 0.5, 'y': 0.1, 'z': 0.5}, 'scale': 2.2},
+    'groundTransform': {'origin': {'x': 0.5, 'y': 0, 'z': 0.5}, 'scale': 2.4},
+    'tpHandTransform': {'translation': {'x': -0.8, 'y': -0.1, 'z': -0.6}, 'rotation': {'x': 0, 'y': 0, 'z': -30}, 'scale': 0.7},
+}, open(f'{A}itemtypes/carte.json', 'w'), indent=1)
+
 noms = json.load(open('outils/lang.json', encoding='utf-8'))
 for l, d in noms.items(): json.dump(d, open(f'{A}lang/{l}.json', 'w'), indent=1, ensure_ascii=False)
 json.dump({'type': 'code', 'modid': 'curveostockage', 'name': 'Stasis Vault',
-           'authors': ['curveo'], 'version': '1.8.0',
-           'description': "Stasis Vault : stockage virtuel façon Refined Storage pour Vintage Story. Cœur temporel, baies à cylindres-mémoire (cuivre, bronze, acier, réfrigéré, stase), terminal avec recherche, filtres, épingles et journal, tablette sans fil via un émetteur, atelier avec grille d'artisanat et recettes façon JEI, stabilisateur et ancre temporelle alimentés en engrenages temporels pour ralentir ou figer le pourrissement. — Refined Storage-like virtual storage: temporal core, memory cylinder bays, searchable terminal, wireless tablet, crafting workshop with a JEI-style recipe browser, and temporal gear powered stabilizer and chunk anchor.",
+           'authors': ['curveo'], 'version': '1.9.0',
+           'description': "Stasis Vault : stockage virtuel façon Refined Storage pour Vintage Story. Cœur temporel, baies à cylindres-mémoire (cuivre, bronze, fer, acier, réfrigéré, stase), terminal avec recherche, filtres, épingles et journal, tablette sans fil via un émetteur, bus d'import, d'export et de stockage (trémies, coffres, caisses, étagères), automate horloger (autocraft par cartes perforées, accéléré par un axe mécanique), atelier avec grille d'artisanat et recettes façon JEI, stabilisateur et ancre temporelle alimentés en engrenages temporels pour ralentir ou figer le pourrissement. — Refined Storage-like virtual storage: temporal core, memory cylinder bays, searchable terminal, wireless tablet, import/export/storage buses (hoppers, chests, crates, shelves), clockwork autocrafter (punch cards, sped up by mechanical power), crafting workshop with a JEI-style recipe browser, and temporal gear powered stabilizer and chunk anchor.",
            'side': 'Universal', 'requiredOnClient': True, 'dependencies': {'game': '1.22.0'}},
           open('modinfo.json', 'w'), indent=1, ensure_ascii=False)
 print('types ok')

@@ -175,7 +175,8 @@ def cylindre(nom, pal, graine, lumineux=False):
             if d < 3: c.set(x, y, degrade(TEMPO, 0.95 - d / 6))
     c.save(I + f'cylindre-{nom}-couvercle.png')
 
-for nom, pal, gr, lum in (('cuivre', CUIVRE, 21, False), ('bronze', BRONZE, 22, False), ('acier', ACIER, 23, False),
+FERFORGE = [(38, 34, 32), (76, 70, 66), (116, 108, 102), (152, 144, 136), (186, 178, 170)]
+for nom, pal, gr, lum in (('cuivre', CUIVRE, 21, False), ('bronze', BRONZE, 22, False), ('fer', FERFORGE, 26, False), ('acier', ACIER, 23, False),
                           ('refrigere', GIVRE, 24, False), ('stase', TEMPO, 25, True)):
     cylindre(nom, pal, gr, lum)
 print('textures ok')
@@ -192,3 +193,59 @@ def brosse(pal, graine, base=0.55, amplitude=0.1):
     return im
 brosse(LAITON, 41, 0.58).save(G + 'laiton.png')
 print('textures gui ok')
+
+# --- Bus (v1.9) : plaque de laiton, orifice sombre ; chevrons vers le centre (import), vers l'extérieur (export),
+# grille de rangement (stockage)
+AMBRE = [(60, 30, 8), (130, 70, 16), (200, 120, 30), (240, 170, 70), (255, 225, 150)]
+
+def facade_bus(motif, pal, graine):
+    f = metal(LAITON, graine)
+    for y in range(32):
+        for x in range(32):
+            d = math.hypot(x - 15.5, y - 15.5)
+            if d < 11: f.set(x, y, degrade(FER, 0.12 + d / 60))
+            if 11 <= d < 12.4: f.set(x, y, degrade(LAITON, 0.8 if y < 16 else 0.4))
+    if motif == 'grille':
+        for y in range(9, 23):
+            for x in range(9, 23):
+                if (x - 9) % 5 == 4 or (y - 9) % 5 == 4: f.set(x, y, degrade(pal, 0.7))
+    else:
+        # Quatre chevrons : pointe vers le centre (entrée) ou vers le bord (sortie)
+        for k in range(4):
+            for i in range(-3, 4):
+                for e in range(2):
+                    r = 5 + abs(i) + e if motif == 'entree' else 8 - abs(i) + e
+                    x, y = [(15.5 + i, 15.5 - r), (15.5 + r, 15.5 + i), (15.5 - i, 15.5 + r), (15.5 - r, 15.5 - i)][k]
+                    f.set(int(x), int(y), degrade(pal, 0.85))
+    lueur(f, 15.5, 15.5, 5, pal, 0.8)
+    return f
+
+facade_bus('entree', TEMPO, 21).save(B + 'busimport-facade.png')
+facade_bus('sortie', AMBRE, 22).save(B + 'busexport-facade.png')
+facade_bus('grille', TEMPO, 23).save(B + 'busstockage-facade.png')
+print('textures bus ok')
+
+# --- Cartes perforées (v1.9) : parchemin, grille de trous (perforée) ou fines lignes (vierge)
+PAPIER = [(120, 96, 62), (168, 142, 100), (206, 184, 140), (228, 212, 172), (244, 234, 206)]
+def carte(perforee, graine):
+    im = Img(); n = bruit(32, 32, graine, 4); rnd = random.Random(graine)
+    for y in range(32):
+        for x in range(32):
+            im.set(x, y, degrade(PAPIER, 0.62 + (n[y][x] - 0.5) * 0.18))
+    for i in range(32):
+        for (x, y, f) in ((i, 0, 0.75), (0, i, 0.8), (i, 31, 0.7), (31, i, 0.72)): im.shade(x, y, f)
+    for ligne in range(5, 28, 4):
+        for x in range(3, 29): im.shade(x, ligne, 0.93)
+    if perforee:
+        for ligne in range(6, 27, 4):
+            for col in range(4, 28, 3):
+                if rnd.random() < 0.45:
+                    im.set(col, ligne, (40, 30, 20)); im.set(col + 1, ligne, (40, 30, 20))
+                    im.shade(col, ligne + 1, 0.85); im.shade(col + 1, ligne + 1, 0.85)
+    for x in range(26, 31):
+        for y in range(1, 6):
+            if x - 26 >= y - 1: im.set(x, y, (0, 0, 0, 0))
+    return im
+carte(False, 31).save(I + 'carte-vierge.png')
+carte(True, 32).save(I + 'carte-perforee.png')
+print('textures cartes ok')

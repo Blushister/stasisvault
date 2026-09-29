@@ -80,7 +80,7 @@ forme('conduit-noeud', TX, [el('noeud', (5, 5, 5), (11, 11, 11), 'laiton'),
 
 
 # Cylindres-mémoire : prisme octogonal (deux pavés dont un tourné de 45°) + couvercles
-for nom in ('cuivre', 'bronze', 'acier', 'refrigere', 'stase'):
+for nom in ('cuivre', 'bronze', 'fer', 'acier', 'refrigere', 'stase'):
     tx = {'flanc': f'item/cylindre-{nom}-flanc', 'couvercle': f'item/cylindre-{nom}-couvercle'}
     lum = {f: 90 for f in FACES} if nom == 'stase' else None
     faces = {'north': 'couvercle', 'south': 'couvercle', 'east': 'flanc', 'west': 'flanc', 'up': 'flanc', 'down': 'flanc'}
@@ -135,3 +135,101 @@ forme('tablette', {**TX, 'ecran': 'block/terminal-ecran'}, [
     el('lentille', (7.3, 1.5, 14.3), (8.7, 2.2, 14.9), 'verre', glow=G),
 ], dossier='item')
 print('sans-fil ok')
+
+# --- Bus (v1.9) : tête vers le bloc visé. Modèle dessiné tête au nord, puis tourné dans les 6 directions
+# (formes générées plutôt que rotateX/rotateY, pour que les boîtes de sélection suivent exactement).
+TOURNER = {
+    'north': lambda x, y, z: (x, y, z),
+    'south': lambda x, y, z: (16 - x, y, 16 - z),
+    'east':  lambda x, y, z: (16 - z, y, x),
+    'west':  lambda x, y, z: (z, y, 16 - x),
+    'up':    lambda x, y, z: (x, 16 - z, y),
+    'down':  lambda x, y, z: (x, z, 16 - y),
+}
+NORMALES = {'north': (0, 0, -1), 'south': (0, 0, 1), 'east': (1, 0, 0), 'west': (-1, 0, 0), 'up': (0, 1, 0), 'down': (0, -1, 0)}
+
+def tourner_boite(f, t, d):
+    a, b = TOURNER[d](*f), TOURNER[d](*t)
+    return tuple(min(p, q) for p, q in zip(a, b)), tuple(max(p, q) for p, q in zip(a, b))
+
+def tourner_face(face, d):
+    o = TOURNER[d](8, 8, 8); v = NORMALES[face]
+    p = TOURNER[d](8 + v[0], 8 + v[1], 8 + v[2])
+    n = tuple(round(p[i] - o[i]) for i in range(3))
+    return next(k for k, w in NORMALES.items() if w == n)
+
+# (nom, de, à, texture, textures par face, faces à texture entière, lueur)
+# Plat façon Refined Storage : plaque contre le bloc visé, petit boîtier, col, puis un nœud de conduit au centre.
+# Les bras vers les blocs du réseau voisins sont ajoutés au rendu (BEBus.OnTesselation), comme ceux d'un conduit.
+BUS = [
+    ('plaque', (1.5, 1.5, 0), (14.5, 14.5, 1.5), 'laiton', {'north': 'facade'}, ('north',), {'north': 40}),
+    ('boitier', (3.5, 3.5, 1.5), (12.5, 12.5, 3.5), 'fer', {}, (), None),
+    ('col', (6, 6, 3.5), (10, 10, 5), 'lisse', {}, (), None),
+    ('noeud', (5, 5, 5), (11, 11, 11), 'laiton', {}, (), None),
+    ('coeur-verre', (6.5, 6.5, 10.9), (9.5, 9.5, 11.1), 'verre', {}, (), {f: 120 for f in FACES}),
+]
+BOITES_BUS = [((1.5, 1.5, 0), (14.5, 14.5, 1.5)), ((3.5, 3.5, 1.5), (12.5, 12.5, 5)), ((5, 5, 5), (11, 11, 11))]
+
+def boites_bus(d):
+    boites = []
+    for f, t in BOITES_BUS:
+        a, b = tourner_boite(f, t, d)
+        boites.append(dict(zip(('x1', 'y1', 'z1', 'x2', 'y2', 'z2'), (round(v / 16, 4) for v in (*a, *b)))))
+    return boites
+
+for code in ('busimport', 'busexport', 'busstockage'):
+    for d in TOURNER:
+        elements = []
+        for nom, f, t, tex, faces, full, glow in BUS:
+            a, b = tourner_boite(f, t, d)
+            elements.append(el(nom, a, b, tex, {tourner_face(k, d): v for k, v in faces.items()},
+                               full=tuple(tourner_face(k, d) for k in full),
+                               glow={tourner_face(k, d): v for k, v in glow.items()} if glow else None))
+        forme(f'{code}-{d}', {**TX, 'facade': f'block/{code}-facade'}, elements)
+print('bus ok')
+
+# --- Automate horloger (v1.9) : caisson de noyer, engrenage sur le dessus (entraîné par l'axe), tambour à picots
+# et presse visibles par la façade ouverte. Les pièces mobiles sont des formes à part, animées par RenduAutomate.
+TXA = {**TX, 'flancpic': 'item/cylindre-bronze-flanc', 'carte': 'item/carte-perforee'}
+forme('automate', TXA, [
+    el('socle', (0, 0, 0), (16, 2, 16), 'fer'),
+    el('plateau', (0, 13, 0), (16, 14, 16), 'laiton'),
+    *[el(f'montant{i}', (x, 2, z), (x + 2, 13, z + 2), 'lisse') for i, (x, z) in enumerate(((0, 0), (14, 0), (0, 14), (14, 14)))],
+    el('fond', (2, 2, 14), (14, 13, 15), 'noyer'),
+    el('flanc-o', (1, 2, 2), (2, 13, 14), 'noyer'),
+    el('flanc-e', (14, 2, 2), (15, 13, 14), 'noyer'),
+    el('linteau', (0, 11.5, 0.5), (16, 13, 1.5), 'laiton'),
+    el('tablier', (2, 2, 1), (14, 5, 2), 'fer'),
+    el('fente', (4, 3, 0.8), (12, 3.8, 1), 'fer'),
+    el('carte', (5, 3.2, 0.3), (11, 4.6, 0.8), 'carte', full=('north', 'south')),
+    el('palier-o', (3, 6, 7), (4, 9, 9), 'fer'),
+    el('palier-e', (12, 6, 7), (13, 9, 9), 'fer'),
+    el('enclume', (5, 8.5, 2.5), (11, 9, 5.5), 'fer'),
+    el('carte-frappee', (5.5, 9, 3), (10.5, 9.1, 5), 'carte', full=('up',)),
+    # Palier : là où l'axe entre dans l'automate
+    el('palier', (5, 14, 5), (11, 14.6, 11), 'fer'),
+    *[el(f'palier-bride{i}', f, t, 'laiton') for i, (f, t) in enumerate((
+        ((5, 14.6, 5), (11, 15.3, 6)), ((5, 14.6, 10), (11, 15.3, 11)), ((5, 14.6, 6), (6, 15.3, 10)), ((10, 14.6, 6), (11, 15.3, 10))))],
+])
+forme('automate-engrenage', TXA, [
+    el('disque', (2.5, 14, 5), (13.5, 14.5, 11), 'laiton'),
+    el('disque-b', (5, 14, 2.5), (11, 14.5, 13.5), 'laiton'),
+    el('disque-c', (2.5, 14.01, 5), (13.5, 14.49, 11), 'laiton', rot={'Y': 45}, origine=[8, 14.25, 8]),
+    *[el(f'dent{k}', (7.25, 14, 1), (8.75, 14.5, 2.6), 'laiton', rot={'Y': k * 45}, origine=[8, 14.25, 8]) for k in range(8)],
+    el('moyeu', (6.5, 14.6, 6.5), (9.5, 16, 9.5), 'lisse'),
+    el('clavette-a', (6, 15.3, 7.6), (10, 16, 8.4), 'laiton'),
+    el('clavette-b', (7.6, 15.3, 6), (8.4, 16, 10), 'laiton'),
+])
+forme('automate-tambour', TXA, [
+    el('tambour', (4, 5.5, 6), (12, 9.5, 10), 'flancpic', {'east': 'laiton', 'west': 'laiton'}),
+    el('tambour-b', (4.01, 5.5, 6), (11.99, 9.5, 10), 'flancpic', {'east': 'laiton', 'west': 'laiton'}, rot={'X': 45}, origine=[8, 7.5, 8]),
+    el('arbre', (3, 7, 7.5), (13, 8, 8.5), 'lisse'),
+])
+forme('automate-presse', TXA, [
+    el('tige', (7.5, 11.5, 3.5), (8.5, 13, 4.5), 'lisse'),
+    el('tete', (6, 10, 3), (10, 11.5, 5), 'laiton'),
+])
+# Carte perforée (objet tenu) : fine plaque de papier
+for etat in ('vierge', 'perforee'):
+    forme(f'carte-{etat}', {'carte': f'item/carte-{etat}'}, [el('carte', (3, 0, 4.5), (13, 0.3, 11.5), 'carte', full=('up', 'down'))], dossier='item')
+print('automate ok')
