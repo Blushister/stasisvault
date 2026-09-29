@@ -7,12 +7,17 @@ Refined Storage-style virtual storage for **Vintage Story 1.22**: no more walls 
 ## Features
 
 - **Temporal Core** (one per network), **Cylinder Bays** (8 cylinders each) and **Conduits** that shape themselves.
-- **Memory cylinders**: copper, bronze, steel, refrigerated and stasis. A cylinder keeps its contents when removed.
+- **Memory cylinders**: copper, bronze, iron, steel, refrigerated and stasis. A cylinder keeps its contents when removed.
 - **Storage Terminal**: search (`@mod`, `#type`), sort, quick filters, pinned items, activity log, deposit slot, shift-click in/out.
 - **Temporal Stabilizer**: burns temporal gears to slow spoilage (×0.5, ×0.1) or freeze food in stasis cylinders.
 - **Wireless Tablet** linked to a **Temporal Emitter**.
 - **Temporal Anchor**: keeps the network's chunks loaded.
 - **Workshop**: crafting grid with auto-refill and a JEI-style recipe browser.
+- **Import Bus**: pulls items from the container it faces (a machine's output) into the network, and accepts anything a vanilla hopper or chute pushes into it. Whitelist/blacklist filter.
+- **Export Bus**: keeps a chosen amount of each filtered item in the container it faces (chest, firepit fuel, machine input…), taken from the network.
+- **Storage Bus**: adds a chest, crate or shelf (FoodShelves included) to the network; its contents show up in terminals. Whitelisted storage is filled before the cylinders; "extract only" mode available.
+- Buses respect land claims and locks: they only act on containers the player who placed them can use.
+- **Clockwork Automaton** (autocrafting): punch a recipe onto a card from the workshop's recipe browser, place the card in the automaton. Each card can keep a stock in the network ("always 64 planks"), and anything an automaton can make can be ordered from the terminal (Ctrl+Click), missing sub-ingredients being crafted first when another card makes them. A mechanical axle above or below speeds it up; its gear, pinned drum and press are animated with the axle.
 
 ## Building
 
@@ -36,9 +41,23 @@ Assets are generated: edit the generators, then run them (`python3 outils/textur
 
 ## Server configuration
 
-`ModConfig/curveostockage.json` is created on first start (spoilage factors, gear consumption, network size, emitter range, anchor limits). The server sends its settings to players when they join.
+`ModConfig/stasisvault.json` is created on first start (an older `curveostockage.json` is converted automatically and renamed to `.bak`). The server sends its settings to players when they join. Restart the server after editing.
 
-For testing, `"AutoTestActif": true` enables the `/stockage autotest` command, which builds a network near spawn and checks routing, spoilage, serialization and the anchor. Leave it off in production.
+Every part of the mod can be disabled with `Enabled: false`: its recipe is removed and blocks already placed stay inert (nothing is destroyed).
+
+| Section | Settings |
+| --- | --- |
+| `Network` | max blocks per network, max item temperature, auto-sort between cylinders, activity log length, rot alert threshold |
+| `Cylinders` | per material (`copper`, `bronze`, `iron`, `steel`, `refrigerated`, `stasis`): `Enabled`, `MaxItems`, `MaxItemTypes` (existing cylinders included); spoil rates of refrigerated and stasis cylinders |
+| `Fuel` | fuel item (default temporal gear) and charges per item |
+| `Stabilizer` | `Enabled`, `ConsumesFuel`, `MaxCharge`, each mode (`Enabled`, `SpoilRate`, `HoursPerCharge`), storm consumption multiplier |
+| `Anchor` | `Enabled`, `ConsumesFuel`, `MaxCharge`, `HoursPerCharge`, storm multiplier, chunk columns per anchor, anchors per player |
+| `Wireless` | tablet and emitter `Enabled`, `RangeBlocks` (0 = unlimited) |
+| `Workshop` | `Enabled`, grid auto-refill |
+| `Buses` | each bus `Enabled`, transfer interval and items per transfer, respect claims and locks |
+| `Autocrafter` | `Enabled`, craft interval, axle speed-up and bonus, sub-craft depth, max queued orders |
+
+For testing, `"AutoTestEnabled": true` enables the `/stockage autotest` command, which builds a network near spawn and checks routing, spoilage, buses, autocrafting and the config. Leave it off in production.
 
 ## AI disclaimer
 
@@ -52,4 +71,4 @@ AI (Claude, by Anthropic) was used in the development of this mod, including its
 
 ### Français
 
-Stasis Vault apporte un stockage virtuel façon Refined Storage à Vintage Story 1.22 : cylindres-mémoire, terminal avec recherche, tablette sans fil, atelier avec recettes façon JEI, et engrenages temporels pour ralentir ou figer le pourrissement. Compilation : `VINTAGE_STORY=/chemin/vers/Vintagestory outils/construire.sh`. Licence LGPL-3.0.
+Stasis Vault apporte un stockage virtuel façon Refined Storage à Vintage Story 1.22 : cylindres-mémoire, terminal avec recherche, tablette sans fil, bus d'import, d'export et de stockage (trémies, coffres, caisses, étagères), automate horloger (autocraft par cartes perforées, accéléré par un axe), atelier avec recettes façon JEI, et engrenages temporels pour ralentir ou figer le pourrissement. Compilation : `VINTAGE_STORY=/chemin/vers/Vintagestory outils/construire.sh`. Licence LGPL-3.0.

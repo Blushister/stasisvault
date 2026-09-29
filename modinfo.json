@@ -5,8 +5,8 @@
  "authors": [
   "curveo"
  ],
- "version": "1.8.0",
- "description": "Stasis Vault : stockage virtuel façon Refined Storage pour Vintage Story. Cœur temporel, baies à cylindres-mémoire (cuivre, bronze, acier, réfrigéré, stase), terminal avec recherche, filtres, épingles et journal, tablette sans fil via un émetteur, atelier avec grille d'artisanat et recettes façon JEI, stabilisateur et ancre temporelle alimentés en engrenages temporels pour ralentir ou figer le pourrissement. — Refined Storage-like virtual storage: temporal core, memory cylinder bays, searchable terminal, wireless tablet, crafting workshop with a JEI-style recipe browser, and temporal gear powered stabilizer and chunk anchor.",
+ "version": "1.9.0",
+ "description": "Stasis Vault : stockage virtuel façon Refined Storage pour Vintage Story. Cœur temporel, baies à cylindres-mémoire (cuivre, bronze, fer, acier, réfrigéré, stase), terminal avec recherche, filtres, épingles et journal, tablette sans fil via un émetteur, bus d'import, d'export et de stockage (trémies, coffres, caisses, étagères), automate horloger (autocraft par cartes perforées, accéléré par un axe mécanique), atelier avec grille d'artisanat et recettes façon JEI, stabilisateur et ancre temporelle alimentés en engrenages temporels pour ralentir ou figer le pourrissement. — Refined Storage-like virtual storage: temporal core, memory cylinder bays, searchable terminal, wireless tablet, import/export/storage buses (hoppers, chests, crates, shelves), clockwork autocrafter (punch cards, sped up by mechanical power), crafting workshop with a JEI-style recipe browser, and temporal gear powered stabilizer and chunk anchor.",
  "side": "Universal",
  "requiredOnClient": true,
  "dependencies": {
