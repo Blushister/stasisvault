@@ -1,0 +1,24 @@
+{
+ "ingredientPattern": "_C_,BHB",
+ "width": 3,
+ "height": 2,
+ "ingredients": {
+  "B": {
+   "type": "item",
+   "code": "game:ingot-brass"
+  },
+  "C": {
+   "type": "block",
+   "code": "curveostockage:conduit-aucune"
+  },
+  "H": {
+   "type": "block",
+   "code": "game:hopper"
+  }
+ },
+ "output": {
+  "type": "block",
+  "code": "curveostockage:busexport-north",
+  "quantity": 1
+ }
+}

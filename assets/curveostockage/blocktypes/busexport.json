@@ -1,0 +1,261 @@
+{
+ "code": "busexport",
+ "class": "curveostockage.BlockBus",
+ "entityClass": "curveostockage.BusExport",
+ "variantgroups": [
+  {
+   "code": "face",
+   "states": [
+    "north",
+    "south",
+    "east",
+    "west",
+    "up",
+    "down"
+   ]
+  }
+ ],
+ "creativeinventory": {
+  "general": [
+   "*-north"
+  ],
+  "stasisvault": [
+   "*-north"
+  ]
+ },
+ "shapeByType": {
+  "*-north": {
+   "base": "block/busexport-north"
+  },
+  "*-south": {
+   "base": "block/busexport-south"
+  },
+  "*-east": {
+   "base": "block/busexport-east"
+  },
+  "*-west": {
+   "base": "block/busexport-west"
+  },
+  "*-up": {
+   "base": "block/busexport-up"
+  },
+  "*-down": {
+   "base": "block/busexport-down"
+  }
+ },
+ "drawtype": "json",
+ "blockmaterial": "Metal",
+ "resistance": 3.5,
+ "lightAbsorption": 0,
+ "lightHsv": [
+  23,
+  4,
+  5
+ ],
+ "sidesolid": {
+  "all": false
+ },
+ "sideopaque": {
+  "all": false
+ },
+ "sounds": {
+  "place": "game:block/anvil",
+  "break": "game:block/anvil",
+  "hit": "game:block/anvil",
+  "walk": "game:walk/stone"
+ },
+ "collisionSelectionBoxesByType": {
+  "*-north": [
+   {
+    "x1": 0.0938,
+    "y1": 0.0938,
+    "z1": 0.0,
+    "x2": 0.9062,
+    "y2": 0.9062,
+    "z2": 0.0938
+   },
+   {
+    "x1": 0.2188,
+    "y1": 0.2188,
+    "z1": 0.0938,
+    "x2": 0.7812,
+    "y2": 0.7812,
+    "z2": 0.3125
+   },
+   {
+    "x1": 0.3125,
+    "y1": 0.3125,
+    "z1": 0.3125,
+    "x2": 0.6875,
+    "y2": 0.6875,
+    "z2": 0.6875
+   }
+  ],
+  "*-south": [
+   {
+    "x1": 0.0938,
+    "y1": 0.0938,
+    "z1": 0.9062,
+    "x2": 0.9062,
+    "y2": 0.9062,
+    "z2": 1.0
+   },
+   {
+    "x1": 0.2188,
+    "y1": 0.2188,
+    "z1": 0.6875,
+    "x2": 0.7812,
+    "y2": 0.7812,
+    "z2": 0.9062
+   },
+   {
+    "x1": 0.3125,
+    "y1": 0.3125,
+    "z1": 0.3125,
+    "x2": 0.6875,
+    "y2": 0.6875,
+    "z2": 0.6875
+   }
+  ],
+  "*-east": [
+   {
+    "x1": 0.9062,
+    "y1": 0.0938,
+    "z1": 0.0938,
+    "x2": 1.0,
+    "y2": 0.9062,
+    "z2": 0.9062
+   },
+   {
+    "x1": 0.6875,
+    "y1": 0.2188,
+    "z1": 0.2188,
+    "x2": 0.9062,
+    "y2": 0.7812,
+    "z2": 0.7812
+   },
+   {
+    "x1": 0.3125,
+    "y1": 0.3125,
+    "z1": 0.3125,
+    "x2": 0.6875,
+    "y2": 0.6875,
+    "z2": 0.6875
+   }
+  ],
+  "*-west": [
+   {
+    "x1": 0.0,
+    "y1": 0.0938,
+    "z1": 0.0938,
+    "x2": 0.0938,
+    "y2": 0.9062,
+    "z2": 0.9062
+   },
+   {
+    "x1": 0.0938,
+    "y1": 0.2188,
+    "z1": 0.2188,
+    "x2": 0.3125,
+    "y2": 0.7812,
+    "z2": 0.7812
+   },
+   {
+    "x1": 0.3125,
+    "y1": 0.3125,
+    "z1": 0.3125,
+    "x2": 0.6875,
+    "y2": 0.6875,
+    "z2": 0.6875
+   }
+  ],
+  "*-up": [
+   {
+    "x1": 0.0938,
+    "y1": 0.9062,
+    "z1": 0.0938,
+    "x2": 0.9062,
+    "y2": 1.0,
+    "z2": 0.9062
+   },
+   {
+    "x1": 0.2188,
+    "y1": 0.6875,
+    "z1": 0.2188,
+    "x2": 0.7812,
+    "y2": 0.9062,
+    "z2": 0.7812
+   },
+   {
+    "x1": 0.3125,
+    "y1": 0.3125,
+    "z1": 0.3125,
+    "x2": 0.6875,
+    "y2": 0.6875,
+    "z2": 0.6875
+   }
+  ],
+  "*-down": [
+   {
+    "x1": 0.0938,
+    "y1": 0.0,
+    "z1": 0.0938,
+    "x2": 0.9062,
+    "y2": 0.0938,
+    "z2": 0.9062
+   },
+   {
+    "x1": 0.2188,
+    "y1": 0.0938,
+    "z1": 0.2188,
+    "x2": 0.7812,
+    "y2": 0.3125,
+    "z2": 0.7812
+   },
+   {
+    "x1": 0.3125,
+    "y1": 0.3125,
+    "z1": 0.3125,
+    "x2": 0.6875,
+    "y2": 0.6875,
+    "z2": 0.6875
+   }
+  ]
+ },
+ "guiTransform": {
+  "rotation": {
+   "x": -22.6,
+   "y": -135,
+   "z": 0
+  },
+  "origin": {
+   "x": 0.5,
+   "y": 0.5,
+   "z": 0.5
+  },
+  "scale": 1.3
+ },
+ "textures": {
+  "laiton": {
+   "base": "block/laiton"
+  },
+  "lisse": {
+   "base": "block/laiton-lisse"
+  },
+  "fer": {
+   "base": "block/fer"
+  },
+  "cuivre": {
+   "base": "block/cuivre"
+  },
+  "noyer": {
+   "base": "block/noyer"
+  },
+  "verre": {
+   "base": "block/verre-temporel"
+  },
+  "facade": {
+   "base": "block/busexport-facade"
+  }
+ }
+}

@@ -1,0 +1,24 @@
+{
+ "ingredientPattern": "BQB,_C_",
+ "width": 3,
+ "height": 2,
+ "ingredients": {
+  "B": {
+   "type": "item",
+   "code": "game:ingot-brass"
+  },
+  "C": {
+   "type": "block",
+   "code": "curveostockage:conduit-aucune"
+  },
+  "Q": {
+   "type": "item",
+   "code": "game:clearquartz"
+  }
+ },
+ "output": {
+  "type": "block",
+  "code": "curveostockage:busstockage-north",
+  "quantity": 1
+ }
+}
