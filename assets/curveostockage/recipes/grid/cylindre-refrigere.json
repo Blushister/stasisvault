@@ -5,7 +5,12 @@
  "ingredients": {
   "G": {
    "type": "block",
-   "code": "game:lakeice"
+   "code": "game:ice-*",
+   "name": "type",
+   "allowedVariants": [
+    "glacier",
+    "packedglacier"
+   ]
   },
   "C": {
    "type": "item",
