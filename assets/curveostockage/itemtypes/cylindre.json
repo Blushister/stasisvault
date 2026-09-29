@@ -15,6 +15,12 @@
     "types": 50
    }
   },
+  "*-fer": {
+   "capacite": {
+    "objets": 16000,
+    "types": 75
+   }
+  },
   "*-acier": {
    "capacite": {
     "objets": 32000,
@@ -40,6 +46,7 @@
    "states": [
     "cuivre",
     "bronze",
+    "fer",
     "acier",
     "refrigere",
     "stase"
@@ -52,6 +59,9 @@
   },
   "*-bronze": {
    "base": "item/cylindre-bronze"
+  },
+  "*-fer": {
+   "base": "item/cylindre-fer"
   },
   "*-acier": {
    "base": "item/cylindre-acier"
