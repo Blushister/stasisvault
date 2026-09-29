@@ -106,11 +106,12 @@ public class ServeurTablettes
     {
         erreur = null;
         var w = sapi.World;
+        if (!StockageSystem.Config.SansFil.Actif) { erreur = "curveostockage:desactive"; return null; }
         if (!PorteTablette(joueur, emetteur)) { erreur = "curveostockage:tablette-non-reliee"; return null; }
         if (w.BlockAccessor.GetChunkAtBlockPos(emetteur) == null) { erreur = "curveostockage:tablette-endormi"; return null; }
         if (w.BlockAccessor.GetBlock(emetteur) is not BlockReseau { Role: "emetteur" }) { erreur = "curveostockage:tablette-emetteur-absent"; return null; }
         if (joueur.Entity.Pos.Dimension != emetteur.dimension
-            || joueur.Entity.Pos.XYZ.DistanceTo(emetteur.ToVec3d().Add(0.5, 0.5, 0.5)) > StockageSystem.Config.PorteeEmetteur)
+            || (StockageSystem.Config.SansFil.Portee > 0 && joueur.Entity.Pos.XYZ.DistanceTo(emetteur.ToVec3d().Add(0.5, 0.5, 0.5)) > StockageSystem.Config.SansFil.Portee))
         { erreur = "curveostockage:tablette-hors-portee"; return null; }
         if (!w.Claims.TryAccess(joueur, emetteur, EnumBlockAccessFlags.Use)) { erreur = "curveostockage:tablette-interdit"; return null; }
         return Reseau.TrouverCoeur(w, emetteur, out erreur);
@@ -172,6 +173,17 @@ public class ServeurTablettes
                 break;
             case IdPaquets.Extraire:
                 Operations.Extraire(coeur, joueur, PaquetExtraire.Lire(msg.Data));
+                break;
+            case IdPaquets.Perforer:
+                if (PaquetRemplir.Lire(msg.Data) is PaquetRemplir pp) Fabrication.Informer(joueur, Fabrication.Perforer(coeur, joueur, pp), null, t => Info(joueur, t, false));
+                break;
+            case IdPaquets.Commander:
+                if (PaquetCommande.Lire(msg.Data) is PaquetCommande pc)
+                {
+                    var refusCmd = Fabrication.Commander(coeur, joueur, pc, out var detail);
+                    Fabrication.Informer(joueur, refusCmd ?? "curveostockage:commande-lancee", detail, t => Info(joueur, t, false));
+                    Envoyer(joueur, coeur.Lister());
+                }
                 break;
             case IdPaquets.RemplirAtelier:
                 if (PaquetRemplir.Lire(msg.Data) is PaquetRemplir pr && StockageSystem.De(sapi).Atelier?.RemplirRecette(coeur, joueur, pr) is string m) Info(joueur, m, false);
@@ -238,7 +250,7 @@ public class ServeurTablettes
         int distance = (int)joueur.Entity.Pos.XYZ.DistanceTo(s.Emetteur.ToVec3d().Add(0.5, 0.5, 0.5));
         if (distance == s.DistanceEnvoyee) return;
         s.DistanceEnvoyee = distance;
-        canal.SendPacket(new MsgSignalTablette { Distance = distance, Portee = StockageSystem.Config.PorteeEmetteur }, joueur);
+        canal.SendPacket(new MsgSignalTablette { Distance = distance, Portee = StockageSystem.Config.SansFil.Portee }, joueur);
     }
 
     private void Fermer(IServerPlayer joueur)

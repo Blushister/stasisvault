@@ -143,11 +143,12 @@ public class GuiBaie : FenetreBloc
             if (SingleComposer.GetElement("carte" + i) is not CarteAlveole carte) continue;
             var pile = Inventory[i].Itemstack;
             if (pile?.Collectible is not ItemCylindre cyl) { carte.Vide(); continue; }
-            var cap = cyl.Attributes?["capacite"];
+            var (capObjets, capTypes) = StockageSystem.Config.Capacite(cyl);
             var m = cyl.Variant["materiau"];
-            string? note = m == "refrigere" ? Lang.Get("curveostockage:bouton-effet-1") : m == "stase" ? Lang.Get("curveostockage:note-stase") : null;
-            carte.Definir(Lang.Get("curveostockage:court-" + m), note, pile.Attributes.GetLong("cylObjets"), cap?["objets"].AsInt() ?? 1,
-                pile.Attributes.GetInt("cylTypes"), cap?["types"].AsInt() ?? 1);
+            var effet = StockageSystem.Config.Effet(m);
+            string? note = effet == "refrigere" ? Lang.Get("curveostockage:bouton-effet-1") : effet == "stase" ? Lang.Get("curveostockage:note-stase") : null;
+            carte.Definir(Lang.Get("curveostockage:court-" + m), note, pile.Attributes.GetLong("cylObjets"), capObjets,
+                pile.Attributes.GetInt("cylTypes"), capTypes);
         }
     }
 }
@@ -200,10 +201,18 @@ public abstract class FenetreCarburant : FenetreBloc
         return y + 22 + 96 + 16;
     }
 
-    protected void MajCarburant(double carburant, double? jours)
+    protected void MajCarburant(double carburant, double? jours, double chargeMax, bool consomme = true)
     {
-        int max = StockageSystem.Config.EngrenagesMax;
-        (SingleComposer?.GetElement("crans") as CransStasis)?.Definir(carburant, max);
+        if (!consomme)
+        {
+            (SingleComposer?.GetElement("crans") as CransStasis)?.Definir(1, 1);
+            (SingleComposer?.GetElement("autonomie") as ChiffreAutonomie)?.Definir("∞", "", Lang.Get("curveostockage:sans-consommation"));
+            return;
+        }
+        // Au-delà de 32 charges, les crans représentent une fraction de la réserve
+        int crans = (int)Math.Clamp(Math.Ceiling(chargeMax), 1, 32);
+        (SingleComposer?.GetElement("crans") as CransStasis)?.Definir(carburant * crans / Math.Max(1e-6, chargeMax), crans);
+        int max = (int)Math.Round(chargeMax);
         (SingleComposer?.GetElement("autonomie") as ChiffreAutonomie)?.Definir(
             jours is double j ? j.ToString("0.#") : "—", jours != null ? Lang.Get("curveostockage:unite-jours") : "",
             Lang.Get("curveostockage:reserve-engrenages", carburant.ToString("0.#"), max));
@@ -230,8 +239,10 @@ public class GuiStabilisateur : FenetreCarburant
         var bornes = new List<ElementBounds>(); var ajouts = new List<Action<GuiComposer>>();
         double y = Carburant(bornes, ajouts, 38);
         var modeB = ElementBounds.Fixed(0, y, L, 16);
-        double lb = (L - 18) / 4;
-        var boutons = Enumerable.Range(0, 4).Select(i => ElementBounds.Fixed(i * (lb + 6), y + 22, lb, 52)).ToArray();
+        var modes = BEStabilisateur.ModesDisponibles;
+        int nb = modes.Count;
+        double lb = (L - 6 * (nb - 1)) / nb;
+        var boutons = Enumerable.Range(0, nb).Select(i => ElementBounds.Fixed(i * (lb + 6), y + 22, lb, 52)).ToArray();
         var effetB = ElementBounds.Fixed(0, y + 84, L, 22);
         var etatB = ElementBounds.Fixed(0, y + 116, 200, 28);
         var tempeteB = ElementBounds.Fixed(L - 230, y + 116, 230, 28);
@@ -239,11 +250,11 @@ public class GuiStabilisateur : FenetreCarburant
         var c = Commencer("curveostockage-stabilisateur", Fond(bornes));
         foreach (var a in ajouts) a(c);
         c.AddStaticText(Lang.Get("curveostockage:mode").ToUpperInvariant(), Etiquette(), modeB);
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < nb; i++)
         {
-            int mode = i;
+            int mode = modes[i];
             c.AddInteractiveElement(new BoutonMode(capi, boutons[i], Lang.Get("curveostockage:bouton-mode-" + i), Lang.Get("curveostockage:bouton-effet-" + i),
-                () => capi.Network.SendBlockEntityPacket(BlockEntityPosition, BEStabilisateur.PaquetMode + mode)), "mode" + i);
+                () => capi.Network.SendBlockEntityPacket(BlockEntityPosition, BEStabilisateur.PaquetMode + mode)), "mode" + mode);
         }
         c.AddDynamicText("", Style.Police(15, Style.Texte), effetB, "effet");
         c.AddInteractiveElement(new BadgeStasis(capi, etatB), "etat");
@@ -256,10 +267,10 @@ public class GuiStabilisateur : FenetreCarburant
     public void Maj()
     {
         if (SingleComposer == null) return;
-        MajCarburant(stab.Carburant, stab.Mode == 0 ? null : stab.Carburant * stab.HeuresParEngrenage(stab.Mode) / 24);
-        for (int i = 0; i < 4; i++) if (SingleComposer.GetElement("mode" + i) is BoutonMode b) b.Actif = stab.Mode == i;
+        MajCarburant(stab.Carburant, stab.Mode == 0 ? null : stab.Carburant * stab.HeuresParEngrenage(stab.Mode) / 24, stab.ChargeMax, stab.Consomme);
+        foreach (int i in BEStabilisateur.ModesDisponibles) if (SingleComposer.GetElement("mode" + i) is BoutonMode b) b.Actif = stab.Mode == i;
         SingleComposer.GetDynamicText("effet")?.SetNewText(Lang.Get("curveostockage:desc-mode-" + stab.Mode));
-        bool enMarche = stab.Mode > 0 && stab.Carburant > 0;
+        bool enMarche = stab.Mode > 0 && (stab.Carburant > 0 || !stab.Consomme);
         (SingleComposer.GetElement("etat") as BadgeStasis)?.Definir(
             stab.Mode == 0 ? Lang.Get("curveostockage:badge-arret") : enMarche ? Lang.Get("curveostockage:badge-marche") : Lang.Get("curveostockage:badge-vide"),
             stab.Mode == 0 ? BadgeStasis.Ton.Neutre : enMarche ? BadgeStasis.Ton.Actif : BadgeStasis.Ton.Alerte);
@@ -302,19 +313,19 @@ public class GuiAncre : FenetreCarburant
     {
         if (SingleComposer == null) return;
         var cfg = StockageSystem.Config;
-        MajCarburant(ancre.Carburant, ancre.Carburant > 0 ? ancre.Carburant * cfg.HeuresParEngrenageAncre / 24 : null);
+        MajCarburant(ancre.Carburant, ancre.Carburant > 0 ? ancre.Carburant * cfg.Ancre.HeuresParCharge / 24 : null, ancre.ChargeMax, ancre.Consomme);
         (SingleComposer.GetElement("carte") as CarteChunks)?.Definir(ancre.CarteGardees, ancre.CarteReseau);
         int hors = ancre.CarteReseau.Except(ancre.CarteGardees).Count(i => i != 12);
         var legende = new List<(double[]? plein, double[]? contour, string texte)>
         {
-            (Style.Lueur, null, Lang.Get("curveostockage:legende-gardees", ancre.NbColonnes, cfg.ColonnesMaxParAncre)),
+            (Style.Lueur, null, Lang.Get("curveostockage:legende-gardees", ancre.NbColonnes, cfg.Ancre.ColonnesMax)),
             (null, Style.Moyen, Lang.Get("curveostockage:legende-hors", hors)),
             (Style.Laiton, null, Lang.Get("curveostockage:legende-ancre")),
         };
         // Réseau plus étendu que la limite : on le dit, seules les colonnes les plus proches sont gardées
         if (ancre.Limitee) legende.Add((null, Style.Bas, Lang.Get("curveostockage:legende-limitee")));
         (SingleComposer.GetElement("legende") as LegendeStasis)?.Definir(legende);
-        bool active = ancre.Carburant > 0;
+        bool active = ancre.NbColonnes > 0;
         (SingleComposer.GetElement("etat") as BadgeStasis)?.Definir(active ? Lang.Get("curveostockage:badge-active") : Lang.Get("curveostockage:badge-inactive"),
             active ? BadgeStasis.Ton.Actif : BadgeStasis.Ton.Neutre);
         SingleComposer.GetDynamicText("proprio")?.SetNewText(string.IsNullOrEmpty(ancre.ProprietaireNom)

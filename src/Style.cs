@@ -260,12 +260,12 @@ public class GrilleStasis : GuiElementItemSlotGrid
 /// </summary>
 public class GrilleReseau : GrilleStasis
 {
-    private readonly System.Func<int, (long quantite, float? fraicheur, bool epingle)> infos;
+    private readonly System.Func<int, (long quantite, float? fraicheur, bool epingle, bool fabricable)> infos;
     private readonly Dictionary<string, LoadedTexture> textes = new();
     private readonly CairoFont police = new CairoFont(13, GuiStyle.StandardFontName, new double[] { 1, 1, 1, 1 }).WithStroke(new double[] { 0, 0, 0, 1 }, 2);
-    private LoadedTexture? epingle;
+    private LoadedTexture? epingle, rouage;
 
-    public GrilleReseau(ICoreClientAPI capi, IInventory vue, int colonnes, ElementBounds bounds, System.Func<int, (long, float?, bool)> infos)
+    public GrilleReseau(ICoreClientAPI capi, IInventory vue, int colonnes, ElementBounds bounds, System.Func<int, (long, float?, bool, bool)> infos)
         : base(capi, vue, _ => { }, colonnes, null, bounds)
     {
         this.infos = infos;
@@ -331,15 +331,45 @@ public class GrilleReseau : GrilleStasis
         return epingle;
     }
 
+    /// <summary>Petit rouage : l'objet peut être fabriqué par un automate du réseau.</summary>
+    private LoadedTexture Rouage()
+    {
+        if (rouage != null) return rouage;
+        int t = (int)scaled(14);
+        using var surf = new ImageSurface(Format.Argb32, t, t);
+        using var c = new Context(surf);
+        double m = t / 2.0, r1 = t / 2.0 - 0.5, r2 = t / 2.0 - scaled(3);
+        for (int k = 0; k < 16; k++)
+        {
+            double a = k * Math.PI / 8, r = k % 2 == 0 ? r1 : r2;
+            if (k == 0) c.MoveTo(m + r * Math.Cos(a), m + r * Math.Sin(a)); else c.LineTo(m + r * Math.Cos(a), m + r * Math.Sin(a));
+        }
+        c.ClosePath();
+        Style.Couleur(c, Style.Lueur); c.FillPreserve();
+        Style.Couleur(c, new[] { 0.02, 0.1, 0.1, 1.0 }); c.LineWidth = 1; c.Stroke();
+        c.Arc(m, m, scaled(2), 0, Math.PI * 2);
+        Style.Couleur(c, new[] { 0.02, 0.1, 0.1, 1.0 }); c.Fill();
+        rouage = new LoadedTexture(api);
+        generateTexture(surf, ref rouage);
+        return rouage;
+    }
+
     // Surcouches dessinées pendant le rendu de l'interface, au-dessus des objets ; jamais dans PostRender (hors shader gui).
     public override void RenderInteractiveElements(float deltaTime)
     {
         base.RenderInteractiveElements(deltaTime);
         for (int i = 0; i < SlotBounds.Length && i < renderedSlots.Count; i++)
         {
-            var (quantite, fraicheur, epingle) = infos(renderedSlots.GetKeyAtIndex(i));
-            if (quantite <= 0) continue;
+            var (quantite, fraicheur, epingle, fabricable) = infos(renderedSlots.GetKeyAtIndex(i));
             var b = SlotBounds[i];
+            if (fabricable)
+            {
+                // Absent du stock : case voilée, seul le rouage dit qu'on peut le commander
+                if (quantite <= 0) api.Render.RenderRectangle((float)b.renderX, (float)b.renderY, 299, (float)b.InnerWidth, (float)b.InnerHeight, unchecked((int)0x99000000));
+                var tr = Rouage();
+                api.Render.Render2DTexturePremultipliedAlpha(tr.TextureId, (float)(b.renderX + scaled(2)), (float)(b.renderY + b.InnerHeight - tr.Height - scaled(2)), tr.Width, tr.Height, 302);
+            }
+            if (quantite <= 0) continue;
             if (fraicheur is float f)
             {
                 double hb = b.InnerHeight - scaled(10), xb = b.renderX + scaled(3), yb = b.renderY + scaled(5);
@@ -362,7 +392,7 @@ public class GrilleReseau : GrilleStasis
         }
         if (survol >= 0 && survol < inventory.Count && inventory[survol] is ItemSlot slot && !slot.Empty && IsPositionInside(api.Input.MouseX, api.Input.MouseY))
         {
-            var (quantite, fraicheur, _) = infos(survol);
+            var (quantite, fraicheur, _, _) = infos(survol);
             float taux = (inventory as InventoryBase)?.GetTransitionSpeedMul(EnumTransitionType.Perish, slot.Itemstack) ?? 1f;
             (bulle ??= new InfobulleStasis(api)).Afficher(slot, quantite, fraicheur, taux);
         }
@@ -374,6 +404,7 @@ public class GrilleReseau : GrilleStasis
         foreach (var t in textes.Values) t.Dispose();
         textes.Clear();
         epingle?.Dispose();
+        rouage?.Dispose();
         bulle?.Dispose();
     }
 }

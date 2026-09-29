@@ -54,6 +54,7 @@ public class ListeActivite : ElementDynamique
             0 => Lang.Get("curveostockage:journal-range", e.Qui, e.Quantite, nom),
             1 => Lang.Get("curveostockage:journal-retire", e.Qui, e.Quantite, nom),
             2 => Lang.Get("curveostockage:journal-alerte", nom, e.Quantite),
+            4 => Lang.Get("curveostockage:journal-fabrique", e.Qui, e.Quantite, nom),
             _ => Lang.Get("curveostockage:journal-mode", e.Qui, Lang.Get("curveostockage:mode-" + e.Quantite)),
         };
     }
@@ -81,7 +82,7 @@ public class ListeActivite : ElementDynamique
         {
             var (e, pile) = lignes[i];
             double x = scaled(48);
-            if (e.Type >= 2 || pile == null)
+            if (e.Type is 2 or 3 || pile == null)
             {
                 var fond = e.Type == 2 ? Style.Alpha(Style.Moyen, 0.14) : Style.Alpha(Style.Lueur, 0.14);
                 Style.Bloc(ctx, scaled(10), y + scaled(7), scaled(28), scaled(28), scaled(6), fond);
@@ -112,7 +113,7 @@ public class ListeActivite : ElementDynamique
         for (int i = debut; i < lignes.Count && i < debut + Visibles; i++)
         {
             var (e, pile) = lignes[i];
-            if (e.Type < 2 && pile != null)
+            if (e.Type is 0 or 1 or 4 && pile != null)
                 api.Render.RenderItemstackToGui(new DummySlot(pile), Bounds.renderX + scaled(24), y + HauteurLigne / 2, 100, (float)scaled(26), -1, showStackSize: false);
             y += HauteurLigne;
         }

@@ -197,14 +197,9 @@ public class RegistreCylindres
             c = donnees != null ? Cylindre.DepuisOctets(donnees, sapi.World) : new Cylindre { Id = id, Modifie = true };
             charges[id] = c;
         }
-        // Capacité et matériau viennent toujours de l'objet (réglables dans son JSON)
+        // Matériau et capacité viennent toujours de l'objet et de la config (changer la config agit sur les cylindres existants)
         c.Materiau = objet.Collectible.Variant["materiau"] ?? c.Materiau;
-        var cap = objet.Collectible.Attributes?["capacite"];
-        if (cap != null && cap.Exists)
-        {
-            c.ObjetsMax = cap["objets"].AsInt(c.ObjetsMax);
-            c.TypesMax = cap["types"].AsInt(c.TypesMax);
-        }
+        (c.ObjetsMax, c.TypesMax) = StockageSystem.Config.Capacite(objet.Collectible);
         return c;
     }
 

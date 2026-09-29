@@ -3,8 +3,14 @@ using Vintagestory.API.MathTools;
 
 namespace CurveoStockage;
 
+/// <summary>Bloc qui fait partie d'un réseau de stockage : son rôle est le premier mot de son code.</summary>
+public interface IReseau
+{
+    string Role { get; }
+}
+
 /// <summary>Bloc qui fait partie d'un réseau de stockage (cœur, baie, terminal, stabilisateur, conduit).</summary>
-public class BlockReseau : Block
+public class BlockReseau : Block, IReseau
 {
     /// <summary>coeur, baie, terminal, stabilisateur ou conduit (premier mot du code du bloc).</summary>
     public string Role => FirstCodePart();
@@ -27,6 +33,7 @@ public class BlockReseau : Block
         var parties = new Dictionary<string, string>();
         if (Variant.ContainsKey("etat")) parties["etat"] = "vide";
         if (Variant.ContainsKey("side")) parties["side"] = "north";
+        if (Variant.ContainsKey("face")) parties["face"] = "north";
         return parties.Count == 0 ? this : world.GetBlock(CodeWithVariants(parties));
     }
 
@@ -55,6 +62,7 @@ public class BlockReseau : Block
             case BETerminal t: return t.OnPlayerRightClick(byPlayer, blockSel);
             case BEBaie b: return b.OnPlayerRightClick(byPlayer, blockSel);
             case BEACarburant c: return c.OnPlayerRightClick(byPlayer, blockSel);
+            case BEBus b: return b.OnPlayerRightClick(byPlayer, blockSel);
         }
         return base.OnBlockInteractStart(world, byPlayer, blockSel);
     }
@@ -86,7 +94,7 @@ public class BlockConduit : BlockReseau
         if (world.Side != EnumAppSide.Server) return;
         var lettres = new System.Text.StringBuilder();
         foreach (var (face, lettre) in Ordre)
-            if (world.BlockAccessor.GetBlock(pos.AddCopy(face)) is BlockReseau) lettres.Append(lettre);
+            if (world.BlockAccessor.GetBlock(pos.AddCopy(face)) is IReseau) lettres.Append(lettre);
         var etat = lettres.Length == 0 ? "aucune" : lettres.ToString();
         if (Variant["connexions"] == etat) return;
         var nouveau = world.GetBlock(CodeWithVariant("connexions", etat));
@@ -108,7 +116,7 @@ public static class Reseau
 {
     public class Carte
     {
-        public readonly List<BlockPos> Coeurs = new(), Baies = new(), Terminaux = new(), Stabilisateurs = new(), Ateliers = new(), Noeuds = new();
+        public readonly List<BlockPos> Coeurs = new(), Baies = new(), Terminaux = new(), Stabilisateurs = new(), Ateliers = new(), BusStockage = new(), Automates = new(), Noeuds = new();
         public bool TropGrand;
     }
 
@@ -122,7 +130,7 @@ public static class Reseau
         while (file.Count > 0)
         {
             var pos = file.Dequeue();
-            if (world.BlockAccessor.GetBlock(pos) is not BlockReseau bloc) continue;
+            if (world.BlockAccessor.GetBlock(pos) is not IReseau bloc) continue;
             if (++noeuds > max) { carte.TropGrand = true; return carte; }
             carte.Noeuds.Add(pos);
             switch (bloc.Role)
@@ -132,6 +140,8 @@ public static class Reseau
                 case "terminal": carte.Terminaux.Add(pos); break;
                 case "stabilisateur": carte.Stabilisateurs.Add(pos); break;
                 case "atelier": carte.Ateliers.Add(pos); break;
+                case "busstockage": carte.BusStockage.Add(pos); break;
+                case "automate": carte.Automates.Add(pos); break;
             }
             foreach (var face in BlockFacing.ALLFACES)
             {
@@ -145,7 +155,7 @@ public static class Reseau
     /// <summary>Le cœur du réseau auquel appartient ce bloc, s'il y en a exactement un.</summary>
     public static BECoeur? TrouverCoeur(IWorldAccessor world, BlockPos depuis, out string? erreur)
     {
-        var carte = Explorer(world, depuis, StockageSystem.Config.BlocsMaxParReseau);
+        var carte = Explorer(world, depuis, StockageSystem.Config.Reseau.BlocsMax);
         erreur = null;
         if (carte.Coeurs.Count == 0) { erreur = "curveostockage:erreur-sans-coeur"; return null; }
         if (carte.Coeurs.Count > 1) { erreur = "curveostockage:erreur-plusieurs-coeurs"; return null; }

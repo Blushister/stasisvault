@@ -116,6 +116,8 @@ public class GestionAncres
 /// </summary>
 public class BEAncre : BEACarburant
 {
+    public override double ChargeMax => Cfg.Ancre.ChargeMax;
+    public override bool Consomme => Cfg.Ancre.Consomme;
     public override string InventoryClassName => "curveostockage-ancre";
     public string? ProprietaireUid, ProprietaireNom;
     public int NbColonnes;
@@ -146,11 +148,12 @@ public class BEAncre : BEACarburant
         if (dernierTick < 0) dernierTick = maintenant;
         double dt = Math.Max(0, maintenant - dernierTick);
         dernierTick = maintenant;
-        if (Carburant > 0 && dt > 0)
-            Carburant = Math.Max(0, Carburant - dt / Cfg.HeuresParEngrenageAncre * (Tempete() ? Cfg.MultiplicateurTempete : 1));
+        var ra = Cfg.Ancre;
+        if (Consomme && Carburant > 0 && dt > 0)
+            Carburant = Math.Max(0, Carburant - dt / Math.Max(1e-6, ra.HeuresParCharge) * (Tempete() ? Math.Max(0, ra.MultiplicateurTempete) : 1));
 
         if (revisionVue != StockageSystem.Revision || dernierCalcul < 0 || maintenant - dernierCalcul > 1) Calculer(maintenant);
-        var voulues = Carburant > 0 ? visees.ToHashSet() : new HashSet<long>();
+        var voulues = ra.Actif && (Carburant > 0 || !Consomme) ? visees.ToHashSet() : new HashSet<long>();
         if (!voulues.SetEquals(colonnes))
         {
             colonnes = voulues;
@@ -183,15 +186,15 @@ public class BEAncre : BEACarburant
         dernierCalcul = maintenant;
         var gestion = Gestion;
         if (gestion == null) return;
-        var carte = Reseau.Explorer(Api.World, Pos, Cfg.BlocsMaxParReseau);
+        var carte = Reseau.Explorer(Api.World, Pos, Cfg.Reseau.BlocsMax);
         int cs = GlobalConstants.ChunkSize;
         var toutes = carte.Noeuds.Append(Pos)
             .Select(p => (col: gestion.Colonne(p), dist: Math.Abs(p.X / cs - Pos.X / cs) + Math.Abs(p.Z / cs - Pos.Z / cs)))
             .GroupBy(x => x.col).Select(g => g.First())
             .OrderBy(x => x.dist).ToList();
-        Limitee = toutes.Count > Cfg.ColonnesMaxParAncre;
+        Limitee = toutes.Count > Cfg.Ancre.ColonnesMax;
         reseau = toutes.Select(x => x.col).ToList();
-        visees = reseau.Take(Cfg.ColonnesMaxParAncre).ToList();
+        visees = reseau.Take(Math.Max(0, Cfg.Ancre.ColonnesMax)).ToList();
         CarteReseau = reseau.Select(Case).Where(c => c >= 0).ToArray();
     }
 
@@ -199,7 +202,7 @@ public class BEAncre : BEACarburant
     {
         if (ouvreur is not Vintagestory.API.Server.IServerPlayer sp) return false;
         var autre = Gestion?.AncreActiveDe(sp.PlayerUID, Pos);
-        if (autre != null && Gestion!.AncresActivesDe(sp.PlayerUID, Pos) >= Math.Max(1, Cfg.AncresParJoueur))
+        if (autre != null && Gestion!.AncresActivesDe(sp.PlayerUID, Pos) >= Math.Max(1, Cfg.Ancre.AncresParJoueur))
         {
             sp.SendMessage(GlobalConstants.GeneralChatGroup, Lang.GetL(sp.LanguageCode, "curveostockage:ancre-deja",
                 autre.X - Api.World.DefaultSpawnPosition.XYZInt.X, autre.Y, autre.Z - Api.World.DefaultSpawnPosition.XYZInt.Z), EnumChatType.Notification);
@@ -255,10 +258,12 @@ public class BEAncre : BEACarburant
 
     public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
     {
-        dsc.AppendLine(Lang.Get("curveostockage:stab-info-carburant", Carburant.ToString("0.##"), Cfg.EngrenagesMax));
-        dsc.AppendLine(Carburant <= 0 ? Lang.Get("curveostockage:ancre-info-inactive")
-            : Lang.Get("curveostockage:ancre-info-active", NbColonnes, (Carburant * Cfg.HeuresParEngrenageAncre / 24).ToString("0.#")));
-        if (Limitee) dsc.AppendLine(Lang.Get("curveostockage:ancre-info-limitee", Cfg.ColonnesMaxParAncre));
+        if (!Cfg.Ancre.Actif) { dsc.AppendLine(Lang.Get("curveostockage:desactive")); return; }
+        if (Consomme) dsc.AppendLine(Lang.Get("curveostockage:stab-info-carburant", Carburant.ToString("0.##"), ChargeMax));
+        dsc.AppendLine(NbColonnes == 0 ? Lang.Get("curveostockage:ancre-info-inactive")
+            : !Consomme ? Lang.Get("curveostockage:ancre-info-libre", NbColonnes)
+            : Lang.Get("curveostockage:ancre-info-active", NbColonnes, (Carburant * Cfg.Ancre.HeuresParCharge / 24).ToString("0.#")));
+        if (Limitee) dsc.AppendLine(Lang.Get("curveostockage:ancre-info-limitee", Cfg.Ancre.ColonnesMax));
         if (!string.IsNullOrEmpty(ProprietaireNom)) dsc.AppendLine(Lang.Get("curveostockage:ancre-info-proprio", ProprietaireNom));
     }
 }

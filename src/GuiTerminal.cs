@@ -48,6 +48,9 @@ public class PanneauStockage
     private List<(EntreeListe entree, ItemStack pile)> tout = new(), filtre = new();
     private Dictionary<string, EntreeListe> parCle = new();
     private HashSet<string> epingles = new();
+    // Automates horlogers : objets fabricables (même absents du stock) et commandes en cours
+    private readonly Dictionary<string, EntreeFabricable> fabricables = new();
+    private int commandes;
     private List<EvenementJournal> journal = new();
     private PaquetListe? dernier;
     private string recherche = "", categorie = "tout";
@@ -186,7 +189,8 @@ public class PanneauStockage
             (Lang.Get("curveostockage:touche-clic"), Lang.Get("curveostockage:aide-pile")),
             (Lang.Get("curveostockage:touche-clic-droit"), Lang.Get("curveostockage:aide-moitie")),
             (Lang.Get("curveostockage:touche-maj-clic"), Lang.Get("curveostockage:aide-inventaire")),
-            (Lang.Get("curveostockage:touche-molette"), Lang.Get("curveostockage:aide-epingler"))), "aide");
+            (Lang.Get("curveostockage:touche-molette"), Lang.Get("curveostockage:aide-epingler")),
+            (Lang.Get("curveostockage:touche-ctrl-clic"), Lang.Get("curveostockage:aide-commander"))), "aide");
         c.EndChildElements();
         var composer = c.Compose();
         var champ = composer.GetTextInput("recherche");
@@ -239,11 +243,12 @@ public class PanneauStockage
 
     public float TauxDe(ItemStack pile) => taux.TryGetValue(pile, out var t) ? t : 1f;
 
-    private (long, float?, bool) Infos(bool pins, int slot)
+    private (long, float?, bool, bool) Infos(bool pins, int slot)
     {
         var cle = pins ? (slot < clesEpingles.Length ? clesEpingles[slot] : null) : (slot < cles.Length ? cles[slot] : null);
-        if (cle == null) return (0, null, false);
-        return parCle.TryGetValue(cle, out var e) ? (e.Quantite, fraicheurs.GetValueOrDefault(cle), epingles.Contains(cle)) : (0, null, false);
+        if (cle == null) return (0, null, false, false);
+        bool fab = fabricables.ContainsKey(cle);
+        return parCle.TryGetValue(cle, out var e) ? (e.Quantite, fraicheurs.GetValueOrDefault(cle), epingles.Contains(cle), fab) : (0, null, false, fab);
     }
 
     public void Signal(double distance, double portee) { this.distance = distance; this.portee = portee; MajEntete(); }
@@ -262,6 +267,22 @@ public class PanneauStockage
             tout.Add((e, pile));
         }
         parCle = tout.GroupBy(x => x.entree.Cle).ToDictionary(g => g.Key, g => g.First().entree);
+        // Ce que les automates savent fabriquer apparaît aussi à 0, pour pouvoir le commander
+        fabricables.Clear();
+        foreach (var f in paquet.Fabricables)
+        {
+            var pile = new ItemStack(f.Pile);
+            if (!pile.ResolveBlockOrItem(capi.World)) continue;
+            // Déjà en stock (même objet, même si ses attributs diffèrent) : c'est cette case qui porte le rouage
+            var memes = tout.Where(x => x.pile.Collectible.Code.Equals(pile.Collectible.Code)).Select(x => x.entree.Cle).ToList();
+            foreach (var c in memes) fabricables[c] = f;
+            if (memes.Count > 0) continue;
+            fabricables[f.Cle] = f;
+            var e = new EntreeListe { Cle = f.Cle, Pile = f.Pile, Quantite = 0 };
+            tout.Add((e, pile));
+            parCle[f.Cle] = e;
+        }
+        commandes = paquet.Commandes;
         fraicheurs.Clear();
         foreach (var (e, pile) in tout) fraicheurs[e.Cle] = Fraicheur(pile);
         epingles = paquet.Epingles.ToHashSet();
@@ -323,8 +344,8 @@ public class PanneauStockage
         filtre = liste.Where(x => !epingles.Contains(x.entree.Cle)).ToList();
         (Composer?.GetElement("puces") as PucesStasis)?.Definir(Categories.Select(id => new PucesStasis.Puce(id, Lang.Get("curveostockage:filtre-" + id),
             tout.Count(x => DansCategorie(id, x.pile, x.entree.Cle)), id == "bientot")).ToList(), categorie);
-        (Composer?.GetElement("onglets") as OngletsStasis)?.Info(activite ? Lang.Get("curveostockage:activite-info")
-            : Lang.Get("curveostockage:types-affiches", liste.Count));
+        (Composer?.GetElement("onglets") as OngletsStasis)?.Info((activite ? Lang.Get("curveostockage:activite-info")
+            : Lang.Get("curveostockage:types-affiches", liste.Count)) + (commandes > 0 ? " · " + Lang.Get("curveostockage:commandes-en-cours", commandes) : ""));
         MajDefilement();
         Remplir();
     }
@@ -332,7 +353,9 @@ public class PanneauStockage
     private void MajEntete()
     {
         if (Composer == null) return;
-        if (Composer.GetElement("signal") is BadgeStasis s && distance >= 0)
+        if (Composer.GetElement("signal") is BadgeStasis sIllimite && distance >= 0 && portee <= 0)
+            sIllimite.Definir(Lang.Get("curveostockage:signal-illimite", (int)distance), BadgeStasis.Ton.Actif, 4);
+        else if (Composer.GetElement("signal") is BadgeStasis s && distance >= 0)
         {
             double reste = 1 - distance / Math.Max(1, portee);
             int barres = reste > 0.75 ? 4 : reste > 0.5 ? 3 : reste > 0.25 ? 2 : 1;
@@ -403,6 +426,14 @@ public class PanneauStockage
         var souris = capi.World.Player.InventoryManager.MouseItemSlot;
         if (souris != null && !souris.Empty) { envoyer(IdPaquets.DeposerSouris, null); return; }
         if (cle == null) return;
+        bool ctrl = op.CtrlDown || capi.Input.KeyboardKeyState[(int)GlKeys.ControlLeft] || capi.Input.KeyboardKeyState[(int)GlKeys.ControlRight];
+        if (fabricables.TryGetValue(cle, out var fab) && (ctrl || !parCle.TryGetValue(cle, out var en) || en.Quantite <= 0))
+        {
+            var pile = (pins ? vueEpingles : vue)[slotId].Itemstack;
+            // Ouverte après le clic : sinon le terminal, cliqué, repasse devant et la cache
+            if (pile != null) capi.Event.EnqueueMainThreadTask(() => GuiCommande.Ouvrir(capi, pile, fab.Cle, fab.ParFabrication, envoyer), "curveostockage-commande");
+            return;
+        }
         bool maj = op.ShiftDown || capi.Input.KeyboardKeyState[(int)GlKeys.ShiftLeft] || capi.Input.KeyboardKeyState[(int)GlKeys.ShiftRight];
         int mode = maj ? 2 : op.MouseButton == EnumMouseButton.Right ? 1 : 0;
         envoyer(IdPaquets.Extraire, SerializerUtil.Serialize(new PaquetExtraire { Cle = cle, Mode = mode }));

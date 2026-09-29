@@ -2,6 +2,7 @@ using System.Text;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
 namespace CurveoStockage;
@@ -61,11 +62,48 @@ public class BECoeur : BlockEntity
         return liste;
     }
 
+    /// <summary>Les bus de stockage du réseau qui visent un conteneur utilisable.</summary>
+    private List<BEBusStockage> Externes()
+    {
+        var liste = new List<BEBusStockage>();
+        if (carte == null) return liste;
+        foreach (var pos in carte.BusStockage)
+            if (Cfg.Bus.Stockage.Actif && Api.World.BlockAccessor.GetBlockEntity(pos) is BEBusStockage bus && bus.Cible() != null) liste.Add(bus);
+        return liste;
+    }
+    private long signatureExternes;
+
+    // File de fabrication du réseau (automates horlogers), sauvegardée avec le cœur
+    public readonly List<Commande> Commandes = new();
+    private int prochaineCommande = 1;
+
+    public List<BlockPos> Automates() => carte?.Automates ?? new List<BlockPos>();
+
+    /// <summary>Ajoute une commande à la fin de la file, ou devant (ingrédient d'une autre commande).</summary>
+    public void AjouterCommande(Commande c, bool devant)
+    {
+        c.Id = prochaineCommande++;
+        if (devant) Commandes.Insert(0, c); else Commandes.Add(c);
+        Api.World.BlockAccessor.GetChunkAtBlockPos(Pos)?.MarkModified();
+    }
+
+    public void RetirerCommande(Commande c)
+    {
+        Commandes.Remove(c);
+        Api.World.BlockAccessor.GetChunkAtBlockPos(Pos)?.MarkModified();
+    }
+
+    public void ViderCommandes()
+    {
+        Commandes.Clear();
+        Api.World.BlockAccessor.GetChunkAtBlockPos(Pos)?.MarkModified();
+    }
+
     /// <summary>Le réseau est utilisable et compte au moins un atelier.</summary>
-    public bool AAtelier() => erreur == null && carte?.Ateliers.Count > 0;
+    public bool AAtelier() => Cfg.Atelier.Actif && erreur == null && carte?.Ateliers.Count > 0;
 
     private BEStabilisateur? Stabilisateur()
-        => carte?.Stabilisateurs.Select(p => Api.World.BlockAccessor.GetBlockEntity(p) as BEStabilisateur).FirstOrDefault(s => s != null);
+        => !Cfg.Stabilisateur.Actif ? null : carte?.Stabilisateurs.Select(p => Api.World.BlockAccessor.GetBlockEntity(p) as BEStabilisateur).FirstOrDefault(s => s != null);
 
     private bool Tempete() => Api.ModLoader.GetModSystem<SystemTemporalStability>()?.StormData?.nowStormActive == true;
 
@@ -73,14 +111,11 @@ public class BECoeur : BlockEntity
     /// <remarks>Le cylindre de stase est aussi réfrigéré : hors stase alimentée (mode normal, plus d'engrenages), il ralentit comme un réfrigéré.</remarks>
     public static double Taux(string materiau, int mode, double actif)
     {
-        double base_ = materiau is "refrigere" or "stase" ? Cfg.FacteurRefrigere : 1;
-        double f = mode switch
-        {
-            1 => Cfg.FacteurStabilisateurI,
-            2 => Cfg.FacteurStabilisateurII,
-            3 => materiau == "stase" ? 0 : Cfg.FacteurStabilisateurII,
-            _ => 1,
-        };
+        materiau = Cfg.Effet(materiau);
+        var cyl = Cfg.Cylindres;
+        double base_ = materiau == "refrigere" ? cyl.FacteurRefrigere : materiau == "stase" ? cyl.FacteurStaseRepos : 1;
+        if (mode == 3 && materiau == "stase") return actif * cyl.FacteurStaseFige + (1 - actif) * base_;
+        double f = Cfg.Stabilisateur.Mode(mode)?.Facteur ?? 1;
         return base_ * (actif * f + (1 - actif));
     }
 
@@ -92,7 +127,7 @@ public class BECoeur : BlockEntity
         // Réexploré à chaque pose/retrait de bloc, et toutes les 30 s pour voir les parties rechargées avec leur chunk
         if (carte == null || revisionVue != StockageSystem.Revision || Api.World.ElapsedMilliseconds - derniereExploration > 30_000)
         {
-            carte = Reseau.Explorer(Api.World, Pos, Cfg.BlocsMaxParReseau);
+            carte = Reseau.Explorer(Api.World, Pos, Cfg.Reseau.BlocsMax);
             revisionVue = StockageSystem.Revision;
             derniereExploration = Api.World.ElapsedMilliseconds;
         }
@@ -106,7 +141,7 @@ public class BECoeur : BlockEntity
         double actif = 0;
         modeCourant = stab?.Mode ?? 0;
         if (stab != null) actif = stab.Consommer(dt, Tempete());
-        stabilisateurActif = stab != null && stab.Mode > 0 && stab.Carburant > 0;
+        stabilisateurActif = stab != null && stab.Mode > 0 && (stab.Carburant > 0 || !Cfg.Stabilisateur.Consomme);
 
         foreach (var (c, _) in presents)
         {
@@ -115,7 +150,14 @@ public class BECoeur : BlockEntity
             c.AvancerHorloge(maintenant, taux);
         }
         relies = presents.Select(p => p.c.Id).ToHashSet();
-        if (erreur == null) Reequilibrer(presents);
+        if (erreur == null)
+        {
+            Reequilibrer(presents);
+            // Un coffre relié par un bus de stockage a changé (à la main, par une trémie…) : les terminaux ouverts se mettent à jour
+            long sig = 17;
+            foreach (var bus in Externes()) sig = sig * 31 + bus.Signature();
+            if (sig != signatureExternes) { signatureExternes = sig; if (!premierTick) Changement(); }
+        }
         premierTick = false;
         dernierTick = maintenant;
         Api.World.BlockAccessor.GetChunkAtBlockPos(Pos)?.MarkModified();
@@ -169,8 +211,8 @@ public class BECoeur : BlockEntity
         if (dernier != null && type <= 1 && dernier.Type == type && dernier.Qui == qui && dernier.Code == code && maintenant - dernier.Temps < 60_000)
         { dernier.Quantite += quantite; dernier.Temps = maintenant; }
         else journal.Add(new EvenementJournal { Temps = maintenant, Qui = qui ?? "", Type = type, Code = code, Quantite = quantite });
-        journal.RemoveAll(e => maintenant - e.Temps > 24 * 3600_000L);
-        while (journal.Count > 40) journal.RemoveAt(0);
+        journal.RemoveAll(e => maintenant - e.Temps > Cfg.Reseau.JournalHeures * 3600_000L);
+        while (journal.Count > Math.Max(1, Cfg.Reseau.JournalEvenementsMax)) journal.RemoveAt(0);
         Api.World.BlockAccessor.GetChunkAtBlockPos(Pos)?.MarkModified();
     }
 
@@ -179,7 +221,7 @@ public class BECoeur : BlockEntity
     {
         MiseAJour();
         if (erreur != null) return erreur;
-        return nbCylindres == 0 ? "curveostockage:erreur-sans-cylindre" : null;
+        return nbCylindres == 0 && Externes().Count == 0 ? "curveostockage:erreur-sans-cylindre" : null;
     }
 
     /// <summary>
@@ -187,8 +229,8 @@ public class BECoeur : BlockEntity
     /// le mode du moment ; le reste évite la stase et le réfrigéré pour leur laisser la place.
     /// </summary>
     private static int RangMateriau(string materiau, bool perissable) => perissable
-        ? materiau switch { "stase" => 0, "refrigere" => 1, _ => 2 }
-        : materiau switch { "stase" => 2, "refrigere" => 1, _ => 0 };
+        ? Cfg.Effet(materiau) switch { "stase" => 0, "refrigere" => 1, _ => 2 }
+        : Cfg.Effet(materiau) switch { "stase" => 2, "refrigere" => 1, _ => 0 };
 
     private static IEnumerable<Cylindre> Ordonner(List<(Cylindre c, ItemSlot slot)> presents, string cle, bool perissable)
         => presents.Select(p => p.c).OrderBy(c => RangMateriau(c.Materiau, perissable)).ThenBy(c => c.Trouver(cle) != null ? 0 : 1).ToList();
@@ -197,9 +239,10 @@ public class BECoeur : BlockEntity
     /// Tri automatique : déplace peu à peu les objets rangés dans un cylindre moins adapté (viande dans le cuivre alors
     /// qu'un cylindre de stase a de la place, fibres qui occupent la stase…). Quelques entrées par passage.
     /// </summary>
-    private void Reequilibrer(List<(Cylindre c, ItemSlot slot)> presents, int maxDeplacements = 6)
+    private void Reequilibrer(List<(Cylindre c, ItemSlot slot)> presents)
     {
-        if (presents.Count < 2) return;
+        int maxDeplacements = Cfg.Reseau.DeplacementsParTri;
+        if (!Cfg.Reseau.TriAutomatique || maxDeplacements <= 0 || presents.Count < 2) return;
         var world = Api.World;
         var cylindres = presents.Select(p => p.c).ToList();
         int faits = 0;
@@ -231,19 +274,31 @@ public class BECoeur : BlockEntity
         refus = Pret();
         if (refus != null || pile.StackSize <= 0) return 0;
         var world = Api.World;
-        if (pile.Collectible.GetTemperature(world, pile) > Cfg.TemperatureMax) { refus = "curveostockage:refus-chaud"; return 0; }
+        if (pile.Collectible.GetTemperature(world, pile) > Cfg.Reseau.TemperatureMax) { refus = "curveostockage:refus-chaud"; return 0; }
         if (pile.Collectible is ItemCylindre) { refus = "curveostockage:refus-cylindre"; return 0; }
         // La pile arrive d'un inventaire normal : on la met à jour à vitesse normale avant de la ranger
         if (Transitions.Avancer(world, pile, 1f) == null) { pile.StackSize = 0; return 0; }
         var cle = Transitions.Cle(pile);
         bool perissable = Transitions.APeremption(world, pile);
         int total = 0;
+        // Ordre : les coffres réservés à cet objet (bus de stockage en liste blanche), les cylindres, puis les autres coffres
+        var externes = Externes();
+        foreach (var bus in externes.Where(b => b.Prioritaire(pile)))
+        {
+            if (pile.StackSize <= 0) break;
+            total += bus.Inserer(pile);
+        }
         foreach (var c in Ordonner(Presents(), cle, perissable))
         {
             if (pile.StackSize <= 0) break;
             int n = c.Ajouter(pile, cle, world);
             pile.StackSize -= n;
             total += n;
+        }
+        foreach (var bus in externes.Where(b => !b.Prioritaire(pile)))
+        {
+            if (pile.StackSize <= 0) break;
+            total += bus.Inserer(pile);
         }
         if (total == 0) refus = "curveostockage:refus-plein";
         else { Journaliser(qui, 0, pile, total); Changement(); }
@@ -255,14 +310,23 @@ public class BECoeur : BlockEntity
     {
         if (Pret() != null || quantite <= 0) return null;
         ItemStack? sortie = null;
-        foreach (var (c, _) in Presents())
+        void Prendre(ItemStack? part)
         {
-            if (c.Trouver(cle) == null) continue;
-            var part = c.Retirer(cle, quantite - (sortie?.StackSize ?? 0), Api.World);
-            if (part == null) continue;
+            if (part == null) return;
             if (sortie == null) sortie = part;
             else Transitions.Fusionner(sortie, part);
-            if (sortie.StackSize >= quantite) break;
+        }
+        // Les coffres d'abord (le pourrissement y est normal), les cylindres ensuite
+        foreach (var bus in Externes())
+        {
+            if (sortie?.StackSize >= quantite) break;
+            Prendre(bus.Extraire(cle, quantite - (sortie?.StackSize ?? 0)));
+        }
+        foreach (var (c, _) in Presents())
+        {
+            if (sortie?.StackSize >= quantite) break;
+            if (c.Trouver(cle) == null) continue;
+            Prendre(c.Retirer(cle, quantite - (sortie?.StackSize ?? 0), Api.World));
         }
         if (sortie != null) { Journaliser(qui, 1, sortie, sortie.StackSize); Changement(); }
         return sortie;
@@ -273,13 +337,16 @@ public class BECoeur : BlockEntity
     {
         var parCle = new Dictionary<string, (ItemStack exemple, long quantite)>();
         if (Pret() != null) return new();
+        void Compter(string cle, ItemStack pile)
+        {
+            if (parCle.TryGetValue(cle, out var v)) parCle[cle] = (v.exemple, v.quantite + pile.StackSize);
+            else { var ex = pile.Clone(); ex.StackSize = 1; parCle[cle] = (ex, pile.StackSize); }
+        }
         foreach (var (c, _) in Presents())
             foreach (var e in c.Entrees)
-            {
-                if (e.Pile == null) continue;
-                if (parCle.TryGetValue(e.Cle, out var v)) parCle[e.Cle] = (v.exemple, v.quantite + e.Pile.StackSize);
-                else { var ex = e.Pile.Clone(); ex.StackSize = 1; parCle[e.Cle] = (ex, e.Pile.StackSize); }
-            }
+                if (e.Pile != null) Compter(e.Cle, e.Pile);
+        foreach (var bus in Externes())
+            foreach (var (cle, pile) in bus.Piles()) Compter(cle, pile);
         return parCle.Select(kv => (kv.Key, kv.Value.exemple, kv.Value.quantite)).ToList();
     }
 
@@ -296,6 +363,13 @@ public class BECoeur : BlockEntity
             exemple ??= e.Pile;
             quantite += e.Pile.StackSize;
         }
+        foreach (var bus in Externes())
+            foreach (var (c, pile) in bus.Piles())
+            {
+                if (c != cle) continue;
+                exemple ??= pile;
+                quantite += pile.StackSize;
+            }
         return (exemple, quantite);
     }
 
@@ -323,7 +397,7 @@ public class BECoeur : BlockEntity
                 if (entree.Pile == null) continue;
                 if (Transitions.Fraicheur(Api.World, entree.Pile) is float f)
                 {
-                    if (f < 0.2f) { if (alertes.Add(entree.Cle)) Journaliser(null, 2, entree.Pile, (int)(f * 100)); }
+                    if (f < Cfg.Reseau.AlerteFraicheur) { if (alertes.Add(entree.Cle)) Journaliser(null, 2, entree.Pile, (int)(f * 100)); }
                     else alertes.Remove(entree.Cle);
                 }
                 if (agregat.TryGetValue(entree.Cle, out var existante)) existante.Quantite += entree.Pile.StackSize;
@@ -336,6 +410,20 @@ public class BECoeur : BlockEntity
             paquet.Objets += c.Objets; paquet.ObjetsMax += c.ObjetsMax;
             paquet.Types += c.Types; paquet.TypesMax += c.TypesMax;
         }
+        foreach (var bus in Externes())
+        {
+            foreach (var (cle, pile) in bus.Piles())
+            {
+                if (agregat.TryGetValue(cle, out var existante)) existante.Quantite += pile.StackSize;
+                else
+                {
+                    agregat[cle] = new EntreeListe { Cle = cle, Quantite = pile.StackSize, Taux = bus.Taux(pile) };
+                    exemples[cle] = pile;
+                }
+            }
+            var (o, om, t, tm) = bus.Capacite();
+            paquet.Objets += o; paquet.ObjetsMax += om; paquet.Types += t; paquet.TypesMax += tm;
+        }
         foreach (var (cle, entree) in agregat)
         {
             var exemple = exemples[cle].Clone();
@@ -347,6 +435,16 @@ public class BECoeur : BlockEntity
         paquet.StabilisateurActif = stabilisateurActif;
         paquet.Journal = journal.ToList();
         paquet.Atelier = AAtelier();
+        paquet.Commandes = Commandes.Count(c => !c.Stock);
+        var dejaVues = new HashSet<string>();
+        foreach (var c in Cfg.Automate.Actif ? Cartes.DuReseau(this) : Enumerable.Empty<ItemStack>())
+        {
+            if (ItemCarte.Sortie(Api.World, c) is not ItemStack sortie) continue;
+            var cle = Transitions.Cle(sortie);
+            if (!dejaVues.Add(cle)) continue;
+            var ex = sortie.Clone(); ex.StackSize = 1;
+            paquet.Fabricables.Add(new EntreeFabricable { Cle = cle, Pile = ex.ToBytes(), ParFabrication = sortie.StackSize });
+        }
         return paquet;
     }
 
@@ -379,6 +477,8 @@ public class BECoeur : BlockEntity
         tree.SetLong("objets", objets); tree.SetLong("objetsMax", objetsMax);
         tree.SetInt("types", types); tree.SetInt("typesMax", typesMax);
         if (erreur != null) tree.SetString("erreur", erreur);
+        tree["commandes"] = new ByteArrayAttribute(Vintagestory.API.Util.SerializerUtil.Serialize(Commandes));
+        tree.SetInt("prochaineCommande", prochaineCommande);
     }
 
     public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolving)
@@ -391,6 +491,9 @@ public class BECoeur : BlockEntity
         objets = tree.GetLong("objets"); objetsMax = tree.GetLong("objetsMax");
         types = tree.GetInt("types"); typesMax = tree.GetInt("typesMax");
         erreur = tree.GetString("erreur");
+        if (tree["commandes"] is ByteArrayAttribute c && c.value?.Length > 0)
+            try { Commandes.Clear(); Commandes.AddRange(Vintagestory.API.Util.SerializerUtil.Deserialize<List<Commande>>(c.value)); } catch { }
+        prochaineCommande = Math.Max(1, tree.GetInt("prochaineCommande", 1));
     }
 
     public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)

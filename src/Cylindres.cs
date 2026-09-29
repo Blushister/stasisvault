@@ -10,8 +10,7 @@ public class ItemCylindre : Item
     public override void GetHeldItemInfo(ItemSlot inSlot, StringBuilder dsc, IWorldAccessor world, bool withDebugInfo)
     {
         base.GetHeldItemInfo(inSlot, dsc, world, withDebugInfo);
-        var cap = Attributes?["capacite"];
-        int objetsMax = cap?["objets"].AsInt() ?? 0, typesMax = cap?["types"].AsInt() ?? 0;
+        var (objetsMax, typesMax) = StockageSystem.Config.Capacite(this);
         var attr = inSlot.Itemstack?.Attributes;
         if (attr == null) return;
         if (!attr.HasAttribute("cylId"))
@@ -27,6 +26,8 @@ public class ItemCylindre : Item
                 dsc.AppendLine("  • " + (EvenementJournal.Pile(codes[i], world)?.GetName() ?? codes[i]) + " ×" + Style.Abreger(qtes[i]));
         }
         var materiau = Variant["materiau"];
-        if (materiau is "refrigere" or "stase") dsc.AppendLine(Lang.Get("curveostockage:cyl-desc-" + materiau));
+        if (materiau is "refrigere" or "stase")
+            dsc.AppendLine(StockageSystem.Config.Effet(materiau) == materiau
+                ? Lang.Get("curveostockage:cyl-desc-" + materiau) : Lang.Get("curveostockage:cyl-desactive"));
     }
 }

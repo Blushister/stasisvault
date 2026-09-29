@@ -4,6 +4,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
+using Vintagestory.GameContent;
 
 namespace CurveoStockage;
 
@@ -167,6 +168,126 @@ public static class AutoTest
             var (_, _, n1) = GestionAtelier.Planifier(coeur, recTab, false);
             r.Append($"\n- plan tablette ×1 : {n1} (attendu 1) ; {w.GridRecipes.Count} recettes de grille chargées");
         }
+
+        // Bus (v1.9) : import (coffre, trémie, liste noire), export (quantité à garder), stockage (lecture, retrait, liste blanche)
+        BlockEntityContainer Coffre(BlockPos pos)
+        {
+            var bloc = w.GetBlock(new AssetLocation("game:chest-east")) ?? throw new Exception("coffre introuvable");
+            ba.SetBlock(bloc.Id, pos);
+            if (ba.GetBlockEntity(pos) == null) ba.SpawnBlockEntity(bloc.EntityClass, pos);
+            return ba.GetBlockEntity(pos) as BlockEntityContainer ?? throw new Exception("pas de BE coffre");
+        }
+        void Remplir(BlockEntityContainer c, int i, string code, int n) { c.Inventory[i].Itemstack = Objet(code, n); c.Inventory[i].MarkDirty(); }
+        long Qte(string code) => coeur.Contenu().Where(c => c.exemple.Collectible.Code.ToString() == code).Sum(c => c.quantite);
+        long DansCoffre(BlockEntityContainer c, string code) => c.Inventory.Where(s => !s.Empty && s.Itemstack.Collectible.Code.ToString() == code).Sum(s => (long)s.StackSize);
+        var pBusI = pCoeur.DownCopy(); var pCoffreI = pBusI.DownCopy();
+        var pBusE = pCond.SouthCopy(); var pCoffreE = pBusE.SouthCopy();
+        var pBusS = pCond.DownCopy(); var pCoffreS = pBusS.DownCopy();
+        Poser("busimport-down", pBusI); Poser("busexport-south", pBusE); Poser("busstockage-down", pBusS);
+        var coffreI = Coffre(pCoffreI); var coffreE = Coffre(pCoffreE); var coffreS = Coffre(pCoffreS);
+        var busI = ba.GetBlockEntity(pBusI) as BEBusImport ?? throw new Exception("pas de BE bus d'import");
+        var busE = ba.GetBlockEntity(pBusE) as BEBusExport ?? throw new Exception("pas de BE bus d'export");
+        var busS = ba.GetBlockEntity(pBusS) as BEBusStockage ?? throw new Exception("pas de BE bus de stockage");
+        coeur.MiseAJour();
+
+        Remplir(coffreI, 0, "game:flint", 20);
+        long silex0 = Qte("game:flint");
+        busI.Tick();
+        long apres1 = DansCoffre(coffreI, "game:flint"), reseau1 = Qte("game:flint") - silex0;
+        busI.Tick();
+        r.Append($"\n- bus d'import : coffre {apres1} silex après 1 transfert (attendu 4), réseau +{reseau1} (attendu 16), puis coffre {DansCoffre(coffreI, "game:flint")} (attendu 0)");
+        var source = new DummySlot(Objet("game:flint", 5));
+        var entree = busI.Inventory.GetAutoPushIntoSlot(BlockFacing.UP, source);
+        int pousse = entree == null ? 0 : source.TryPutInto(w, entree, 5);
+        entree?.MarkDirty();
+        r.Append($"\n- trémie → bus d'import : {pousse} poussés (attendu 5), case d'entrée vide {busI.Inventory[0].Empty} (attendu True), réseau +{Qte("game:flint") - silex0} silex (attendu 25)");
+        busI.Inventory[1].Itemstack = Objet("game:flint", 1);
+        busI.ListeNoire = true;
+        Remplir(coffreI, 0, "game:flint", 3); Remplir(coffreI, 1, "game:stick", 4);
+        busI.Tick();
+        bool trémieRefusee = busI.Inventory.GetAutoPushIntoSlot(BlockFacing.UP, new DummySlot(Objet("game:flint", 1))) == null;
+        r.Append($"\n- liste noire (silex) : restent {DansCoffre(coffreI, "game:flint")} silex (attendu 3) et {DansCoffre(coffreI, "game:stick")} bâtons (attendu 0) ; silex refusé à la trémie {trémieRefusee} (attendu True)");
+
+        busE.Inventory[0].Itemstack = Objet("game:flint", 10);
+        busE.Tick(); long e1 = DansCoffre(coffreE, "game:flint");
+        busE.Tick(); long e2 = DansCoffre(coffreE, "game:flint");
+        r.Append($"\n- bus d'export (garder 10 silex) : coffre {e1} puis {e2} (attendus 10 et 10), réseau {Qte("game:flint")} (attendu 15)");
+
+        Remplir(coffreS, 0, "game:stick", 7);
+        coeur.MiseAJour();
+        long batons = Qte("game:stick");
+        var cleBaton = coeur.Contenu().First(c => c.exemple.Collectible.Code.Path == "stick").cle;
+        var pris = coeur.Extraire(cleBaton, 9);
+        r.Append($"\n- bus de stockage : le réseau voit {batons} bâtons (attendu 11), retrait de {pris?.StackSize} → coffre {DansCoffre(coffreS, "game:stick")} (attendu 0 : le coffre passe en premier)");
+        busS.Inventory[0].Itemstack = Objet("game:stick", 1);
+        if (pris != null) coeur.Inserer(pris, out _);
+        long blanche = DansCoffre(coffreS, "game:stick");
+        busS.RetraitSeul = true;
+        coeur.Inserer(Objet("game:stick", 2), out _);
+        r.Append($"\n- liste blanche (bâtons) : {blanche} rangés dans le coffre (attendu 9) ; retrait seul : coffre {DansCoffre(coffreS, "game:stick")} (attendu 9)");
+
+        var cfg = StockageSystem.Config;
+        cfg.Cylindres.Materiaux["stase"].Actif = false; cfg.Cylindres.Materiaux["refrigere"].Actif = false;
+        double tStase = BECoeur.Taux("stase", 3, 1), tFrigo = BECoeur.Taux("refrigere", 0, 0);
+        int attendues = w.GridRecipes.Count(x => PaquetRemplir.CodeSortie(x) is "curveostockage:cylindre-refrigere" or "curveostockage:cylindre-stase");
+        int retirees = StockageSystem.RetirerRecettes(w);
+        cfg.Cylindres.Materiaux["stase"].Actif = true; cfg.Cylindres.Materiaux["refrigere"].Actif = true;
+        r.Append($"\n- config sans stase ni réfrigéré : vitesse du cylindre de stase en mode stase {tStase:0.##} (attendu {cfg.Stabilisateur.ModeStase.Facteur:0.##}), réfrigéré {tFrigo:0.##} (attendu 1), recettes retirées {retirees} (attendu {attendues}, variantes comprises)");
+        foreach (var pos in new[] { pBusI, pCoffreI, pBusE, pCoffreE, pBusS, pCoffreS }) ba.SetBlock(0, pos);
+
+        // Capacité réglable par la config (cylindres existants compris) et cylindre en fer
+        var ancienne = cfg.Cylindres.Materiaux["cuivre"];
+        cfg.Cylindres.Materiaux["cuivre"] = new ReglageCylindre(3000, 40);
+        var cylC = reg.Obtenir(baie.Inventory[0].Itemstack!.Attributes.GetString("cylId"), baie.Inventory[0].Itemstack!);
+        r.Append($"\n- config de capacité (cuivre 3000/40) : cylindre existant {cylC.ObjetsMax}/{cylC.TypesMax} (attendu 3000/40)");
+        cfg.Cylindres.Materiaux["cuivre"] = ancienne;
+        var fer = Objet("curveostockage:cylindre-fer");
+        var (fo, ft) = cfg.Capacite(fer.Collectible);
+        bool recetteFer = w.GridRecipes.Any(x => PaquetRemplir.CodeSortie(x) == "curveostockage:cylindre-fer");
+        r.Append($"\n- cylindre en fer : {fo}/{ft} (attendu 16000/75), recette chargée {recetteFer} (attendu True)");
+
+        // Automate horloger : maintien du stock (cartes vierges) et commande avec sous-fabrication (conduits → automate)
+        var pAuto = pStab.WestCopy();
+        Poser("automate-north", pAuto);
+        var auto = ba.GetBlockEntity(pAuto) as BEAutomate ?? throw new Exception("pas de BE automate");
+        coeur.MiseAJour();
+        ItemStack Carte(string sortie)
+        {
+            var rec = w.GridRecipes.First(x => PaquetRemplir.CodeSortie(x) == sortie);
+            var c = Objet("curveostockage:carte-perforee");
+            ItemCarte.Graver(c, rec, w.GridRecipes.IndexOf(rec));
+            return c;
+        }
+        var carteConduit = Carte("curveostockage:conduit-aucune");
+        var carteVierge = Carte("curveostockage:carte-vierge");
+        var carteAuto = Carte("curveostockage:automate-north");
+        carteVierge.Attributes.SetInt("garder", 6);
+        foreach (var (i, c) in new[] { (0, carteConduit), (1, carteVierge), (2, carteAuto) }) { auto.Inventory[i].Itemstack = c; auto.Inventory[i].MarkDirty(); }
+        coeur.Inserer(Objet("game:paper-parchment", 2), out _);
+        for (int k = 0; k < 4; k++) auto.Tick(5);
+        r.Append($"\n- automate, garder 6 cartes vierges : réseau {Qte("curveostockage:carte-vierge")} cartes (attendu 8 : 2 fabrications de 4), parchemin {Qte("game:paper-parchment")} (attendu 0), cadence sans axe {auto.Cadence} (attendu 1)");
+        var manquesAvant = Cartes.Manques(coeur, carteAuto, 1);
+        coeur.Inserer(Objet("game:ingot-copper", 2), out _);
+        var manquesApres = Cartes.Manques(coeur, carteAuto, 1);
+        r.Append($"\n- simulation de commande d'un automate : sans cuivre il manque [{string.Join(", ", manquesAvant.Select(m => m.Value + " " + m.Key))}] (attendu : 2 lingots de cuivre, pour le conduit), avec : [{string.Join(", ", manquesApres.Keys)}] (attendu vide)");
+        coeur.AjouterCommande(new Commande { Carte = ItemCarte.Ident(carteAuto), Restant = 1, Total = 1, Qui = "autotest", NomSortie = "automate" }, false);
+        for (int k = 0; k < 6 && coeur.Commandes.Count > 0; k++) auto.Tick(5);
+        r.Append($"\n- commande d'un automate : fabriqués {Qte("curveostockage:automate-north")} (attendu 1), conduits restants {Qte("curveostockage:conduit-aucune")} (attendu 7 : 8 fabriqués, 1 utilisé), file vide {coeur.Commandes.Count == 0} (attendu True), journal « fabriqué » {coeur.Journal.Any(e => e.Type == 4)} (attendu True)");
+        var liste2 = coeur.Lister();
+        r.Append($"\n- terminal : {liste2.Fabricables.Count} objets fabricables annoncés (attendu 3)");
+        ba.SetBlock(0, pAuto); StockageSystem.Revision++;
+
+        // Config : conversion d'une config d'avant la 1.9, désactivation de chaque partie
+        var ancienneConfig = ConfigStockage.Lire(Newtonsoft.Json.Linq.JObject.Parse(
+            "{\"FacteurRefrigere\": 0.3, \"HeuresParEngrenageI\": 100, \"EngrenagesMax\": 32, \"PorteeEmetteur\": 64, \"CylindreStaseActif\": false, \"Capacites\": {\"acier\": {\"Objets\": 50000, \"Types\": 150}}}"));
+        r.Append($"\n- ancienne config convertie : réfrigéré {ancienneConfig.Cylindres.FacteurRefrigere} (attendu 0,3), mode I {ancienneConfig.Stabilisateur.ModeI.HeuresParCharge} h (attendu 100), charge max {ancienneConfig.Stabilisateur.ChargeMax}/{ancienneConfig.Ancre.ChargeMax} (attendu 32/32), portée {ancienneConfig.SansFil.Portee} (attendu 64), stase {ancienneConfig.Cylindres.Materiaux["stase"].Actif}/{ancienneConfig.Stabilisateur.ModeStase.Actif} (attendu False/False), acier {ancienneConfig.Cylindres.Materiaux["acier"].Objets}/{ancienneConfig.Cylindres.Materiaux["acier"].Types} (attendu 50000/150)");
+        var toutCoupe = new ConfigStockage();
+        foreach (var m in toutCoupe.Cylindres.Materiaux.Values) m.Actif = false;
+        toutCoupe.Stabilisateur.Actif = toutCoupe.Ancre.Actif = toutCoupe.SansFil.Actif = toutCoupe.Atelier.Actif = toutCoupe.Automate.Actif = false;
+        toutCoupe.Bus.Import.Actif = toutCoupe.Bus.Export.Actif = toutCoupe.Bus.Stockage.Actif = false;
+        var codesCoupes = toutCoupe.RecettesDesactivees();
+        int sansRecette = codesCoupes.Count(code => !w.GridRecipes.Any(x => PaquetRemplir.CodeSortie(x) == code) && code != "curveostockage:cylindre-stase" && code != "curveostockage:cylindre-refrigere");
+        r.Append($"\n- tout désactivé : {codesCoupes.Count} objets sans recette (attendu 16), dont {sansRecette} codes qui ne correspondent à aucune recette (attendu 0)");
 
         // Paquets clients : illisibles ou hors limites rejetés, valides acceptés
         byte[] P(PaquetExtraire p) => Vintagestory.API.Util.SerializerUtil.Serialize(p);

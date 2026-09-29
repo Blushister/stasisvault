@@ -65,6 +65,7 @@ public class GestionAtelier
 
     private void Fabrique(string evenement, ref EnumHandling handling, IAttribute donnees)
     {
+        if (!StockageSystem.Config.Atelier.RemplissageAuto) return;
         if (donnees is not ITreeAttribute arbre) return;
         long entite = arbre.GetLong("byentityid");
         var joueur = sapi.World.AllOnlinePlayers.OfType<IServerPlayer>().FirstOrDefault(p => p.Entity?.EntityId == entite);

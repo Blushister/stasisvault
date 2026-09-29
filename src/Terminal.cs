@@ -106,6 +106,17 @@ public class BETerminal : BlockEntityOpenableContainer
                 Operations.Epingler(Api, sp, data);
                 EnvoyerA(sp);
                 break;
+            case IdPaquets.Perforer:
+                if (PaquetRemplir.Lire(data) is PaquetRemplir pp) Fabrication.Informer(sp, Fabrication.Perforer(coeur, sp, pp), null, t => Refuser(sp, t));
+                break;
+            case IdPaquets.Commander:
+                if (PaquetCommande.Lire(data) is PaquetCommande pc)
+                {
+                    var refusCmd = Fabrication.Commander(coeur, sp, pc, out var detail);
+                    Fabrication.Informer(sp, refusCmd ?? "curveostockage:commande-lancee", detail, t => Refuser(sp, t));
+                    EnvoyerA(sp);
+                }
+                break;
             case IdPaquets.RemplirAtelier:
                 if (PaquetRemplir.Lire(data) is PaquetRemplir pr && StockageSystem.De(Api).Atelier?.RemplirRecette(coeur, sp, pr) is string msg) Refuser(sp, msg);
                 break;

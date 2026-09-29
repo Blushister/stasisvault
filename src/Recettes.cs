@@ -460,10 +460,11 @@ public class GuiRecettes : GuiDialog
         double hBas = 146 + 8 + 48;
         var listeB = ElementBounds.Fixed(0, y, L, Math.Max(90, H - y - hBas - 8));
         var apercuB = ElementBounds.Fixed(0, H - hBas, L, 146);
-        var remplirB = ElementBounds.Fixed(0, H - 48, L, 48);
+        var remplirB = ElementBounds.Fixed(0, H - 48, (L - 8) / 2, 48);
+        var perforerB = ElementBounds.Fixed((L + 8) / 2, H - 48, (L - 8) / 2, 48);
         var fond = ElementBounds.Fill.WithFixedPadding(GuiStyle.ElementToDialogPadding + 6);
         fond.BothSizing = ElementSizing.FitToChildren;
-        fond.WithChildren(rechB, pucesB, listeB, apercuB, remplirB);
+        fond.WithChildren(rechB, pucesB, listeB, apercuB, remplirB, perforerB);
         var dialogue = ElementStdBounds.AutosizedMainDialog.WithAlignment(EnumDialogArea.RightMiddle).WithFixedAlignmentOffset(-GuiStyle.DialogToScreenPadding, 0);
 
         Positions.Oublier(capi, "curveostockage-recettes");
@@ -476,6 +477,7 @@ public class GuiRecettes : GuiDialog
         c.AddInteractiveElement(new ListeRecettes(capi, listeB, s => { choisie = s; MajApercu(); }), "liste");
         c.AddInteractiveElement(new ApercuRecette(capi, apercuB), "apercu");
         c.AddInteractiveElement(new BoutonMode(capi, remplirB, Lang.Get("curveostockage:recettes-remplir"), Lang.Get("curveostockage:recettes-remplir-effet"), Remplir), "remplir");
+        c.AddInteractiveElement(new BoutonMode(capi, perforerB, Lang.Get("curveostockage:recettes-perforer"), Lang.Get("curveostockage:recettes-perforer-effet"), Perforer), "perforer");
         c.EndChildElements();
         SingleComposer = c.Compose();
         var champ = SingleComposer.GetTextInput("recherche");
@@ -525,6 +527,13 @@ public class GuiRecettes : GuiDialog
     }
 
     private void MajApercu() => (SingleComposer?.GetElement("apercu") as ApercuRecette)?.Definir(choisie, stock());
+
+    /// <summary>Grave la recette affichée sur une carte vierge (pour un automate horloger).</summary>
+    private void Perforer()
+    {
+        if (SingleComposer?.GetElement("apercu") is not ApercuRecette apercu || apercu.Recette is not (GridRecipe r, int i)) return;
+        envoyer(IdPaquets.Perforer, Vintagestory.API.Util.SerializerUtil.Serialize(new PaquetRemplir { Index = i, Nom = r.Name?.ToString() ?? "", Sortie = PaquetRemplir.CodeSortie(r) }));
+    }
 
     private void Remplir()
     {
