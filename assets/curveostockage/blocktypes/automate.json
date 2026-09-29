@@ -1,0 +1,97 @@
+{
+ "code": "automate",
+ "class": "curveostockage.BlockAutomate",
+ "entityClass": "curveostockage.Automate",
+ "entityBehaviors": [
+  {
+   "name": "MPConsumer",
+   "properties": {
+    "mechPartShape": null,
+    "resistance": 0.05
+   }
+  }
+ ],
+ "variantgroups": [
+  {
+   "code": "orientation",
+   "states": [
+    "north",
+    "east",
+    "south",
+    "west"
+   ]
+  }
+ ],
+ "creativeinventory": {
+  "general": [
+   "*-north"
+  ],
+  "mechanics": [
+   "*-north"
+  ],
+  "stasisvault": [
+   "*-north"
+  ]
+ },
+ "shapeByType": {
+  "*-north": {
+   "base": "block/automate",
+   "rotateY": 180
+  },
+  "*-east": {
+   "base": "block/automate",
+   "rotateY": 90
+  },
+  "*-south": {
+   "base": "block/automate",
+   "rotateY": 0
+  },
+  "*-west": {
+   "base": "block/automate",
+   "rotateY": 270
+  }
+ },
+ "textures": {
+  "laiton": {
+   "base": "block/laiton"
+  },
+  "lisse": {
+   "base": "block/laiton-lisse"
+  },
+  "fer": {
+   "base": "block/fer"
+  },
+  "cuivre": {
+   "base": "block/cuivre"
+  },
+  "noyer": {
+   "base": "block/noyer"
+  },
+  "verre": {
+   "base": "block/verre-temporel"
+  },
+  "flancpic": {
+   "base": "item/cylindre-bronze-flanc"
+  },
+  "carte": {
+   "base": "item/carte-perforee"
+  }
+ },
+ "drawtype": "json",
+ "blockmaterial": "Wood",
+ "resistance": 3,
+ "lightAbsorption": 0,
+ "sidesolid": {
+  "all": false,
+  "down": true
+ },
+ "sideopaque": {
+  "all": false
+ },
+ "sounds": {
+  "place": "game:block/planks",
+  "break": "game:block/planks",
+  "hit": "game:block/planks",
+  "walk": "game:walk/wood"
+ }
+}

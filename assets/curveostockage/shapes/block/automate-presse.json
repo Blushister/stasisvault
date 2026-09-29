@@ -1,0 +1,157 @@
+{
+ "editor": {
+  "allAngles": false
+ },
+ "textureWidth": 16,
+ "textureHeight": 16,
+ "textures": {
+  "laiton": "curveostockage:block/laiton",
+  "lisse": "curveostockage:block/laiton-lisse",
+  "fer": "curveostockage:block/fer",
+  "cuivre": "curveostockage:block/cuivre",
+  "noyer": "curveostockage:block/noyer",
+  "verre": "curveostockage:block/verre-temporel",
+  "flancpic": "curveostockage:item/cylindre-bronze-flanc",
+  "carte": "curveostockage:item/carte-perforee"
+ },
+ "elements": [
+  {
+   "name": "tige",
+   "from": [
+    7.5,
+    11.5,
+    3.5
+   ],
+   "to": [
+    8.5,
+    13,
+    4.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#lisse",
+     "uv": [
+      7.5,
+      3,
+      8.5,
+      4.5
+     ]
+    },
+    "east": {
+     "texture": "#lisse",
+     "uv": [
+      3.5,
+      3,
+      4.5,
+      4.5
+     ]
+    },
+    "south": {
+     "texture": "#lisse",
+     "uv": [
+      7.5,
+      3,
+      8.5,
+      4.5
+     ]
+    },
+    "west": {
+     "texture": "#lisse",
+     "uv": [
+      3.5,
+      3,
+      4.5,
+      4.5
+     ]
+    },
+    "up": {
+     "texture": "#lisse",
+     "uv": [
+      7.5,
+      3.5,
+      8.5,
+      4.5
+     ]
+    },
+    "down": {
+     "texture": "#lisse",
+     "uv": [
+      7.5,
+      3.5,
+      8.5,
+      4.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "tete",
+   "from": [
+    6,
+    10,
+    3
+   ],
+   "to": [
+    10,
+    11.5,
+    5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#laiton",
+     "uv": [
+      6,
+      4.5,
+      10,
+      6
+     ]
+    },
+    "east": {
+     "texture": "#laiton",
+     "uv": [
+      3,
+      4.5,
+      5,
+      6
+     ]
+    },
+    "south": {
+     "texture": "#laiton",
+     "uv": [
+      6,
+      4.5,
+      10,
+      6
+     ]
+    },
+    "west": {
+     "texture": "#laiton",
+     "uv": [
+      3,
+      4.5,
+      5,
+      6
+     ]
+    },
+    "up": {
+     "texture": "#laiton",
+     "uv": [
+      6,
+      3,
+      10,
+      5
+     ]
+    },
+    "down": {
+     "texture": "#laiton",
+     "uv": [
+      6,
+      3,
+      10,
+      5
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,232 @@
+{
+ "editor": {
+  "allAngles": false
+ },
+ "textureWidth": 16,
+ "textureHeight": 16,
+ "textures": {
+  "laiton": "curveostockage:block/laiton",
+  "lisse": "curveostockage:block/laiton-lisse",
+  "fer": "curveostockage:block/fer",
+  "cuivre": "curveostockage:block/cuivre",
+  "noyer": "curveostockage:block/noyer",
+  "verre": "curveostockage:block/verre-temporel",
+  "flancpic": "curveostockage:item/cylindre-bronze-flanc",
+  "carte": "curveostockage:item/carte-perforee"
+ },
+ "elements": [
+  {
+   "name": "tambour",
+   "from": [
+    4,
+    5.5,
+    6
+   ],
+   "to": [
+    12,
+    9.5,
+    10
+   ],
+   "faces": {
+    "north": {
+     "texture": "#flancpic",
+     "uv": [
+      4,
+      6.5,
+      12,
+      10.5
+     ]
+    },
+    "east": {
+     "texture": "#laiton",
+     "uv": [
+      6,
+      6.5,
+      10,
+      10.5
+     ]
+    },
+    "south": {
+     "texture": "#flancpic",
+     "uv": [
+      4,
+      6.5,
+      12,
+      10.5
+     ]
+    },
+    "west": {
+     "texture": "#laiton",
+     "uv": [
+      6,
+      6.5,
+      10,
+      10.5
+     ]
+    },
+    "up": {
+     "texture": "#flancpic",
+     "uv": [
+      4,
+      6,
+      12,
+      10
+     ]
+    },
+    "down": {
+     "texture": "#flancpic",
+     "uv": [
+      4,
+      6,
+      12,
+      10
+     ]
+    }
+   }
+  },
+  {
+   "name": "tambour-b",
+   "from": [
+    4.01,
+    5.5,
+    6
+   ],
+   "to": [
+    11.99,
+    9.5,
+    10
+   ],
+   "faces": {
+    "north": {
+     "texture": "#flancpic",
+     "uv": [
+      4.01,
+      6.5,
+      11.99,
+      10.5
+     ]
+    },
+    "east": {
+     "texture": "#laiton",
+     "uv": [
+      6,
+      6.5,
+      10,
+      10.5
+     ]
+    },
+    "south": {
+     "texture": "#flancpic",
+     "uv": [
+      4.01,
+      6.5,
+      11.99,
+      10.5
+     ]
+    },
+    "west": {
+     "texture": "#laiton",
+     "uv": [
+      6,
+      6.5,
+      10,
+      10.5
+     ]
+    },
+    "up": {
+     "texture": "#flancpic",
+     "uv": [
+      4.01,
+      6,
+      11.99,
+      10
+     ]
+    },
+    "down": {
+     "texture": "#flancpic",
+     "uv": [
+      4.01,
+      6,
+      11.99,
+      10
+     ]
+    }
+   },
+   "rotationOrigin": [
+    8,
+    7.5,
+    8
+   ],
+   "rotationX": 45
+  },
+  {
+   "name": "arbre",
+   "from": [
+    3,
+    7,
+    7.5
+   ],
+   "to": [
+    13,
+    8,
+    8.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#lisse",
+     "uv": [
+      3,
+      8,
+      13,
+      9
+     ]
+    },
+    "east": {
+     "texture": "#lisse",
+     "uv": [
+      7.5,
+      8,
+      8.5,
+      9
+     ]
+    },
+    "south": {
+     "texture": "#lisse",
+     "uv": [
+      3,
+      8,
+      13,
+      9
+     ]
+    },
+    "west": {
+     "texture": "#lisse",
+     "uv": [
+      7.5,
+      8,
+      8.5,
+      9
+     ]
+    },
+    "up": {
+     "texture": "#lisse",
+     "uv": [
+      3,
+      7.5,
+      13,
+      8.5
+     ]
+    },
+    "down": {
+     "texture": "#lisse",
+     "uv": [
+      3,
+      7.5,
+      13,
+      8.5
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,16 @@
+{
+ "ingredientPattern": "P",
+ "width": 1,
+ "height": 1,
+ "ingredients": {
+  "P": {
+   "type": "item",
+   "code": "game:paper-parchment"
+  }
+ },
+ "output": {
+  "type": "item",
+  "code": "curveostockage:carte-vierge",
+  "quantity": 4
+ }
+}

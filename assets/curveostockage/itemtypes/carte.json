@@ -1,0 +1,67 @@
+{
+ "code": "carte",
+ "class": "curveostockage.ItemCarte",
+ "variantgroups": [
+  {
+   "code": "etat",
+   "states": [
+    "vierge",
+    "perforee"
+   ]
+  }
+ ],
+ "maxstacksizeByType": {
+  "*-vierge": 64,
+  "*": 1
+ },
+ "shapeByType": {
+  "*-vierge": {
+   "base": "item/carte-vierge"
+  },
+  "*-perforee": {
+   "base": "item/carte-perforee"
+  }
+ },
+ "creativeinventory": {
+  "general": [
+   "*-vierge"
+  ],
+  "stasisvault": [
+   "*-vierge"
+  ]
+ },
+ "guiTransform": {
+  "rotation": {
+   "x": 75,
+   "y": 0,
+   "z": 0
+  },
+  "origin": {
+   "x": 0.5,
+   "y": 0.1,
+   "z": 0.5
+  },
+  "scale": 2.2
+ },
+ "groundTransform": {
+  "origin": {
+   "x": 0.5,
+   "y": 0,
+   "z": 0.5
+  },
+  "scale": 2.4
+ },
+ "tpHandTransform": {
+  "translation": {
+   "x": -0.8,
+   "y": -0.1,
+   "z": -0.6
+  },
+  "rotation": {
+   "x": 0,
+   "y": 0,
+   "z": -30
+  },
+  "scale": 0.7
+ }
+}
